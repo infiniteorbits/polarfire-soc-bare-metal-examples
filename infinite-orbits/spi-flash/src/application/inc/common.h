@@ -19,8 +19,8 @@
 
 
 
-#define   ENTER               0x0DU
 #define NUM_BLOCKS 1364  // replace with actual size of BIOS boot partition
+#define BLOCK_SIZE              512u
 #define BUFFER_SIZE (BLOCK_SIZE * 4)  // buffer size is 4 blocks (2KB)
 
 typedef enum COMMAND_TYPE_

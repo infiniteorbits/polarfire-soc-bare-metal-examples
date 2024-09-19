@@ -1,4 +1,4 @@
-# can-spi
+# spi-flash
 
 This example project demonstrates the use of the PolarFire SoC MSS MMC block. 
 The MSS MMC supports eMMC, SD, and SDIO devices. This example project demonstrates
