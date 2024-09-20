@@ -21,19 +21,6 @@ mss_uart_instance_t *g_uart= &g_mss_uart0_lo;
 const uint8_t g_greeting_msg0[] = "\r\n\r\n\
        ******* PolarFire SoC SPI Flash testing *******\n\r";
 
-const uint8_t g_greeting_msg[] =
-"\r\n\r\n\t  ******* PolarFire SoC system services testing *******\n\n\n\r\
-\n\n\r\
-Note: This application demonstrates the execution of some of the system services. \n\r\
-\r\n\n\
-\r\n0. Print the greeting message \r\n\
-\r\n1. Get Design Information \r\n\
-\r\n2. Bitstream authentification \r\n\
-\r\n3. IAP authentification\r\n\
-\r\n4. Auto_update \n\r\
-\r\n5. Execute IAP \n\r\
-\r\n6. Device Certificate Service \n\r";
-
 uint8_t g_message1[] =
 "\r\n\r\n\
 Write-Read test on the SPI flash successful\r\n\
@@ -77,8 +64,7 @@ void read_flash(uint32_t address, size_t num_bytes, uint8_t num_blocks, uint8_t*
     uint32_t index = 0;
     for(uint8_t i = 0; i < num_blocks; i++) {
         FLASH_read(index + address, buf, num_bytes);
-        snprintf(message, sizeof(message), "\n\n\rreading %0X: ", index + address);
-        MSS_UART_polled_tx_string(g_uart, (const uint8_t*)message);
+
         index += num_bytes;
         for(uint16_t j = 0; j < num_bytes; j++) {
             snprintf(message, sizeof(message), "%02X ", buf[j]);
@@ -91,8 +77,6 @@ void write_flash(uint32_t address, size_t num_bytes, uint8_t num_blocks, uint8_t
     uint32_t index = 0;
     for(uint8_t i = 0; i < num_blocks; i++) {
         FLASH_program(index + address, buf, num_bytes);
-        snprintf(message, sizeof(message), "\n\n\rwriting %0X: ", index + address);
-        MSS_UART_polled_tx_string(g_uart, (const uint8_t*)message);
         index += num_bytes;
         for(uint16_t j = 0; j < num_bytes; j++) {
             snprintf(message, sizeof(message), "%02X ", buf[j]);
@@ -102,8 +86,6 @@ void write_flash(uint32_t address, size_t num_bytes, uint8_t num_blocks, uint8_t
 }
 
 void erase_flash(uint32_t address, uint8_t* message) {
-    snprintf(message, sizeof(message), "\n\n\rerasing %0X ", address);
-    MSS_UART_polled_tx_string(g_uart, (const uint8_t*)message);
     FLASH_erase_64k_block(address);
     delay1(500);
 }
@@ -141,7 +123,6 @@ void u54_1(void)
             MSS_UART_115200_BAUD,
             MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT);
 
-    MSS_UART_polled_tx_string(g_uart, (const uint8_t*)g_greeting_msg);
 
     MSS_UART_polled_tx_string (g_uart, g_greeting_msg0);
 
@@ -186,31 +167,41 @@ void u54_1(void)
     size_t num_bytes = 256;
     uint8_t g_write_buf[num_bytes];
     uint8_t g_read_buf[num_bytes];
-    uint8_t num_blocks = 5;
+    uint8_t num_blocks = 1;
 
     // Initialize write buffer
     for (uint16_t i = 0; i < num_bytes; i++) {
-        g_write_buf[i] = 0xAB;
+        g_write_buf[i] = i;
     }
 
     // Reading
+    snprintf(message, sizeof(message), "\n\n\rreading %0X: ", address1);
+    MSS_UART_polled_tx_string(g_uart, (const uint8_t*)message);
     read_flash(address1, num_bytes, num_blocks, g_read_buf, message);
 
     // Erasing
+    snprintf(message, sizeof(message), "\n\n\rerasing %0X: ", address1);
+    MSS_UART_polled_tx_string(g_uart, (const uint8_t*)message);
     erase_flash(address1, message);
 
     // Reading after erasing
+    snprintf(message, sizeof(message), "\n\n\rreading after erasing %0X: ", address1);
+    MSS_UART_polled_tx_string(g_uart, (const uint8_t*)message);
     read_flash(address1, num_bytes, num_blocks, g_read_buf, message);
 
     // Writing
+    snprintf(message, sizeof(message), "\n\n\rwriting %0X: ", address1);
+    MSS_UART_polled_tx_string(g_uart, (const uint8_t*)message);
     write_flash(address1, num_bytes, num_blocks, g_write_buf, message);
 
     // Reading after writing
+    snprintf(message, sizeof(message), "\n\n\rreading after writing %0X: ", address1);
+    MSS_UART_polled_tx_string(g_uart, (const uint8_t*)message);
     read_flash(address1, num_bytes, num_blocks, g_read_buf, message);
 
     /**********************************IAP test********************************/
     // IAP service and result reporting
-    uint32_t spi_idx = 0;
+  /***uint32_t spi_idx = 0;
     uint32_t flash_addresses[3] = {GOLDEN_IMAGE_SPI_ADDRESS,UPDATE_IMAGE_SPI_ADDRESS,IAP_IMAGE_SPI_ADDRESS};
     uint8_t result = MSS_SYS_execute_iap(MSS_SYS_IAP_PROGRAM_BY_SPIADDR_CMD, flash_addresses[2]);
     char buff[20];
@@ -228,5 +219,5 @@ void u54_1(void)
     uint16_t mb_offset = 0;
     result = MSS_SYS_authenticate_bitstream(IAP_IMAGE_SPI_ADDRESS, mb_offset);
     sprintf(buff, "%d", result);
-    MSS_UART_polled_tx(g_uart, (uint8_t *)buff, strlen(buff));
+    MSS_UART_polled_tx(g_uart, (uint8_t *)buff, strlen(buff)*///
 }
