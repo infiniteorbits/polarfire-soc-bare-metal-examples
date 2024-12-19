@@ -24,11 +24,11 @@
 
 typedef enum {
     REGION_SLOT_0 = 0,
-    REGION_SLOT_1 = REGION_SLOT_0 + (SLOT_SIZE_BYTES / BLOCK_SIZE_BYTES),
-    REGION_SLOT_2 = REGION_SLOT_1 + (SLOT_SIZE_BYTES / BLOCK_SIZE_BYTES),
-    REGION_SLOT_3 = REGION_SLOT_2 + (SLOT_SIZE_BYTES / BLOCK_SIZE_BYTES),
-    END_OF_SLOT_REGION = REGION_SLOT_3 + (SLOT_SIZE_BYTES / BLOCK_SIZE_BYTES)
+    REGION_SLOT_1 = 0x06400000,
+    REGION_SLOT_2 = 0x0C800000,
+    REGION_SLOT_3 = 0x12C00000,
 } SlotsRegion;
+
 
 /*------------------------------------------------------------------------------
  * Private functions.
@@ -39,8 +39,7 @@ static int8_t mmc_init_emmc(void);
  * Static Variables.
  */
 const uint8_t g_greeting_msg[] =
-"\r\n\r\n\t******* Application to Erase Content of a Specific Slot in eMMC *******\n\r\
-To select the slot, enter the slot number you want to erase via serial port 0, and all blocks in the sector will be erased.\r\n";
+"\r\n\r\n\t******* Enter the slot number (0, 1, 2 or 3) and press enter *******\n\r";
 
 /*------------------------------------------------------------------------------
  * Global Variables.
@@ -133,16 +132,16 @@ void u54_1(void)
                 switch (g_rx_buff[0u])
                 {
                     case '0':
-                        start_slot = REGION_SLOT_0;
+                        start_slot = REGION_SLOT_0 / BLOCK_SIZE_BYTES;
                         break;
                     case '1':
-                        start_slot = REGION_SLOT_1;
+                        start_slot = REGION_SLOT_1 / BLOCK_SIZE_BYTES;
                         break;
                     case '2':
-                        start_slot = REGION_SLOT_2;
+                        start_slot = REGION_SLOT_2 / BLOCK_SIZE_BYTES;
                         break;
                     case '3':
-                        start_slot = REGION_SLOT_3;
+                        start_slot = REGION_SLOT_3 / BLOCK_SIZE_BYTES;
                         break;
                     default:
                         valid_sector = false;
@@ -153,7 +152,7 @@ void u54_1(void)
                 if(valid_sector)
                 {
                    end_slot = ((SLOT_SIZE_BYTES / BLOCK_SIZE_BYTES) + start_slot);
-                   sprintf(p_buff,"\n\r start_slot=%d, end_slot=%d, total blocks = %d", start_slot, end_slot, end_slot - start_slot);
+                   sprintf(p_buff,"\n\r start_slot=%X, end_slot=%X, total blocks = %d", start_slot, end_slot, end_slot - start_slot);
                    MSS_UART_polled_tx(g_uart, p_buff, strlen(p_buff));
                    sprintf(p_buff,"\n\r erasing sector %d .......... wait 5 min please", g_rx_buff[0u] - '0');
                    MSS_UART_polled_tx(g_uart, p_buff, strlen(p_buff));
