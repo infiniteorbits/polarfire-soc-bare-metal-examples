@@ -26,6 +26,8 @@
 #define USE_ADMA2               1u
 #define BLOCK_SIZE_BYTES        512
 #define SLOT_SIZE_BYTES         (100 * 1024 * 1024)  // 100 MB in bytes
+#define STREAM_GEN_BASE_ADDR    0x4A000000u
+
 
 typedef enum {
     REGION_SLOT_0 = 0,
@@ -35,7 +37,28 @@ typedef enum {
     END_OF_SLOT_REGION = REGION_SLOT_3 + (SLOT_SIZE_BYTES / BLOCK_SIZE_BYTES)
 } SlotsRegion;
 
-#define START_ADDRESS           REGION_SLOT_1
+enum memory_devices_id {
+    EMMC_PRIMARY = 10,
+    EMMC_SECONDARY = 20,
+    SPI_FLASH = 255,
+};
+
+typedef enum {
+    DDR_DIS = (1 << 1),    // Bit 1
+    EMMPR_EN = (1 << 8),   // Bit 8
+    EMMSC_EN = (1 << 9),   // Bit 9
+    SW_EN = (1 << 10),     // Bit 10
+    SW_DIS = (1 << 11),    // Bit 11
+    SW_SEL0 = (1 << 12),   // Bit 12
+    SW_SEL1 = (1 << 13),   // Bit 13
+    P3V5_PG = (1 << 14),   // Bit 14
+    P2V0_PG = (1 << 15),   // Bit 15
+    P1V5_PG = (1 << 16),   // Bit 16
+    DDR_PG = (1 << 17),    // Bit 17
+} RegisterBits;
+
+#define START_ADDRESS           REGION_SLOT_0
+#define MEMORY                  EMMC_PRIMARY
 
 /*------------------------------------------------------------------------------
  * Private functions.
@@ -59,6 +82,7 @@ This code defines the main function u54_1 for the hart1 processor. It initialize
  */
 char message[50];
 volatile uint32_t count_sw_ints_h1 = 0U;
+uint32_t* stream_gen_base_register = (void*)(STREAM_GEN_BASE_ADDR + 0x10);
 
 /*------------------------------------------------------------------------------
  * MSS UART
@@ -85,6 +109,51 @@ uint8_t g_mmc_initialized = 0u;
 /*------------------------------------------------------------------------------
  * Global functions
  */
+
+void set_register_bit(uint32_t* register_map_outputs, RegisterBits bit)
+{
+    //DEBUG_PRINT("\n\r - Setting bit %d in register %08x", bit, *register_map_outputs);
+    *register_map_outputs |= bit; // Set the bit
+}
+
+/**
+ * @brief Function to clear a specific bit (with constraints)
+ */
+void clear_register_bit(uint32_t* register_map_outputs, RegisterBits bit)
+{
+    //DEBUG_PRINT("\n\r - Clearing bit %d in register %08x", bit, *register_map_outputs);
+    *register_map_outputs &= ~bit; // Clear the bit
+}
+
+void enable_emmc(uint8_t emmc_id)
+{
+    switch (emmc_id) {
+        case EMMC_PRIMARY:
+            clear_register_bit(stream_gen_base_register, SW_SEL0);
+            clear_register_bit(stream_gen_base_register, SW_SEL1);
+            clear_register_bit(stream_gen_base_register, EMMPR_EN);
+            set_register_bit(stream_gen_base_register, EMMSC_EN);
+            clear_register_bit(stream_gen_base_register, SW_EN);
+            MSS_UART_polled_tx_string(g_uart,
+                                        (const uint8_t *)"\n\r - Primary eMMC enabled\n");
+            break;
+
+        case EMMC_SECONDARY:
+            set_register_bit(stream_gen_base_register, SW_SEL0);
+            set_register_bit(stream_gen_base_register, SW_SEL1);
+            set_register_bit(stream_gen_base_register, EMMPR_EN);
+            clear_register_bit(stream_gen_base_register, EMMSC_EN);
+            clear_register_bit(stream_gen_base_register, SW_EN);
+            MSS_UART_polled_tx_string(g_uart,
+                          (const uint8_t *)"\n\r - Secondary eMMC enabled \n");
+            break;
+
+        default:
+             //mHSS_DEBUG_PRINTF(LOG_ERROR,"Invalid eMMC ID \n");
+            break;
+    }
+}
+
 /* Main function for the hart1(U54_1 processor).
  * Application code running on hart1 is placed here
  *
@@ -198,7 +267,7 @@ void u54_1(void)
         ret_status = MSS_MMC_erase(sector_number, 1u);
     }
 
-    sprintf(message, "\n\r erase, status: %d ", ret_status);
+    sprintf(message, "\n\r - erase status: %d ", ret_status);
     MSS_UART_polled_tx_string(g_uart, message);
 
     for (sector_number = 0; sector_number < 500; sector_number++)
@@ -214,8 +283,10 @@ void u54_1(void)
         }
     }
 
-    sprintf(message, "\n\r INIT OK, read status: %d ", ret_status);
+    sprintf(message, "\n\r - read status: %d ", ret_status);
     MSS_UART_polled_tx_string(g_uart, message);
+
+    enable_emmc(MEMORY);
 
     while (1)
     {
