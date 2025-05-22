@@ -44,8 +44,8 @@ spi_instance_t g_flash_core_spi;
  */
 //static void wait_ready( void );
 static void wait_program_or_erase_controller_ready(void  );
-static void write_enable();
-static void enter_4byte_address_mode();
+static void write_enable(void);
+static void enter_4byte_address_mode(void);
 static void write_cmd_data
 (
 		 spi_instance_t * this_spi,
@@ -61,7 +61,7 @@ static void write_cmd_data
 #define COREGPIO_BASE_ADDR              0x60001000UL
 #define CSS_PF_BASE_ADDRESS             0x60002000UL
 //#define CORESPI_BASE_ADDR               0x09000000UL
-#define CORESPI_BASE_ADDR               0x40000100UL
+#define CORESPI_BASE_ADDR               0x4F000000UL
 #define COREGPIO_IN_BASE_ADDR           0x70002000UL
 #define CORETIMER0_BASE_ADDR            0x70003000UL
 #define CORETIMER1_BASE_ADDR            0x70004000UL
@@ -262,7 +262,7 @@ static void write_cmd_data
 #endif    
 
 }
-static void write_enable()
+static void write_enable(void)
 {
 	uint8_t cmd_buffer;
 	SPI_set_slave_select(SPI_INSTANCE, SPI_SLAVE);
@@ -273,7 +273,7 @@ static void write_enable()
   // wait_ready();
    SPI_clear_slave_select(SPI_INSTANCE, SPI_SLAVE);
 }
-static void enter_4byte_address_mode()
+static void enter_4byte_address_mode(void)
 {
 	uint8_t cmd_buffer;
 	SPI_set_slave_select(SPI_INSTANCE, SPI_SLAVE);
