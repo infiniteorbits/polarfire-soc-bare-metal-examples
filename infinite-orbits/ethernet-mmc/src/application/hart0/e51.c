@@ -82,6 +82,9 @@
  static void ethernet_init(void);
  static void mmc_reset_block(void);
  
+ static mss_mmc_status_t multi_block_write_transfer(uint32_t sector_number);
+ static mss_mmc_status_t multi_block_write(uint32_t sector_number, uint8_t dma_type);
+ void transfer_complete_handler(uint32_t status);
  /*******************************************************************************
   * @brief  TX complete callback (currently unused)
   ******************************************************************************/
@@ -203,10 +206,15 @@
  static void write_payload_to_emmc(const uint8_t *payload, uint32_t payload_len)
  {
      memcpy(g_mmc_tx_buff, payload, payload_len);
+
+     snprintf(message, sizeof(message), "[INFO] Escribiendo bloque %lu en eMMC...\n\r", (unsigned long)g_block_count);
+     PRINT_STRING(message);
  
-     mss_mmc_status_t status = MSS_MMC_single_block_write(
-         (uint32_t *)g_mmc_tx_buff,
-         START_ADDRESS + g_block_count);
+     mss_mmc_status_t status = multi_block_write_transfer(START_ADDRESS+ g_block_count);
+
+     //mss_mmc_status_t status = MSS_MMC_single_block_write(
+      //   (uint32_t *)g_mmc_tx_buff,
+       //  START_ADDRESS + g_block_count);
  
      if (status != MSS_MMC_TRANSFER_SUCCESS)
      {
@@ -296,6 +304,10 @@
      mss_mmc_status_t ret_status;
  
      mss_config_clk_rst(MSS_PERIPH_EMMC, (uint8_t)1, PERIPHERAL_ON);
+
+     __enable_irq();
+     PLIC_SetPriority(MMC_main_PLIC, 2u);
+     PLIC_SetPriority(MMC_wakeup_PLIC, 2u);
  
      ret_status = MSS_MPU_configure(MSS_MPU_MMC, MSS_MPU_PMP_REGION3,
                                     LIM_BASE_ADDRESS, LIM_SIZE,
@@ -342,4 +354,55 @@
  
      return ret_status;
  }
+
+ void transfer_complete_handler(uint32_t status)
+ {
+     uint32_t isr_err;
+ 
+     if (ERROR_INTERRUPT & status)
+     {
+         isr_err = status >> 16u;
+     }
+     else if (TRANSFER_COMPLETE & status)
+     {
+         isr_err = 0u;   /*Transfer complete*/
+     }
+     else
+     {
+         ASSERT(0);
+     }
+ }
+
+ static mss_mmc_status_t multi_block_write_transfer(uint32_t sector_number) {
+    mss_mmc_status_t status = 0u;
+
+    MSS_MMC_set_handler(transfer_complete_handler);
+
+    //status = multi_block_write(sector_number, USE_ADMA2);
+    if (status == MSS_MMC_TRANSFER_SUCCESS) {
+        status = multi_block_write(sector_number, USE_SDMA);
+    }
+
+    return status;
+}
+
+static mss_mmc_status_t multi_block_write(uint32_t sector_number, uint8_t dma_type) {
+    mss_mmc_status_t status = 0u;
+
+    if (USE_ADMA2 == dma_type) {
+        status = MSS_MMC_adma2_write(g_mmc_tx_buff, sector_number, BLOCK_SIZE_BYTES);
+    } else if (USE_SDMA == dma_type) {
+        status = MSS_MMC_sdma_write(g_mmc_tx_buff, sector_number, BLOCK_SIZE_BYTES);
+    } else {
+        status = -1;
+    }
+
+    if (status == MSS_MMC_TRANSFER_IN_PROGRESS) {
+        do {
+            status = MSS_MMC_get_transfer_status();
+        } while (status == MSS_MMC_TRANSFER_IN_PROGRESS);
+    }
+
+    return status;
+}
  
