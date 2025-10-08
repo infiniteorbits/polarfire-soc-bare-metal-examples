@@ -47,7 +47,7 @@
 #define USE_ADMA2               1u
 #define BLOCK_SIZE_BYTES        512
 #define START_ADDRESS           0
-#define BUFFER_SIZE             1 * 1024 * 1024 // in MB
+#define BUFFER_SIZE             (900 * 1024)   // 921,600 bytes (~0.88 MB)
 #define BLOCK_SIZE              512u
 #define RECIVED_PAQUET_SIZE     1024
 #define PACKET_IDLE             0
@@ -386,11 +386,12 @@ void e51(void)
     /* Ethernet init */
     #if ICICLE_KIT
     int ethernet_status = ethernet_init(); 
+    sprintf(message, "\n\r ethernet Init status: %d ", ethernet_status);
+    PRINT_STRING(message);
     #else
     low_level_init();
     #endif
-    sprintf(message, "\n\r ethernet Init status: %d ", ethernet_status);
-    PRINT_STRING(message);
+
 
     /* eMMC init */
     mss_mmc_status_t emmc_status = mmc_init_emmc();

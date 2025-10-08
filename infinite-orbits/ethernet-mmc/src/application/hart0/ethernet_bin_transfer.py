@@ -13,13 +13,13 @@ SRC_MAC = b'\x00\x11\x22\x68\x46\xb7' # PC MAC (remote srever)
 DST_MAC = b'\x00\xfc\x00\x12\x34\x56' # custom board MAC
 ETH_TYPE = b'\x88\xb5'                # Custom EtherType
 
-FILE_PATH = "core-image-minimal-dev-icicle-kit-es-amp-20250730092842.rootfs.wic"                # File to send
+FILE_PATH = "core-image-minimal-mpfs-icicle-kit.rootfs.wic"                # File to send
 CHUNK_SIZE = 1024                     # Must be multiple of 512
-BIG_DELAY_BYTES = 1 * 1024 * 1024     # Bytes before big delay trigger (1 MB)
-BIG_DELAY_TIME = 10                   # Fallback delay (seconds)
+BIG_DELAY_BYTES =  900 * 1024     # Bytes before big delay trigger (1 MB)
+BIG_DELAY_TIME = 1                  # Fallback delay (seconds)
 ADD_SEQ_HEADER = True                 # Add 4-byte sequence counter
 SHOW_PROGRESS = True                  # Show progress
-DELAY = 0.00015                        # Small delay between frames (seconds)
+DELAY = 0.0002                        # Small delay between frames (seconds)
 
 # Commands
 CMD_START = 0x01
