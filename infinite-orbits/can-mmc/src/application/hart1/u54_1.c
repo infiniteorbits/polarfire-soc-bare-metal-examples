@@ -259,8 +259,11 @@ void u54_1(void)
         MSS_UART_polled_tx_string(g_uart,
                (const uint8_t *)"\n\r CAN 1 Message Buffer configuration Error");
     }
-
+    MSS_UART_polled_tx_string(g_uart,
+                   (const uint8_t *)"\n\r Init start");
     ret_status = mmc_init_emmc();
+    MSS_UART_polled_tx_string(g_uart,
+                   (const uint8_t *)"\n\r Init Done");
 
     for (sector_number = 0; sector_number < 500; sector_number++)
     {
@@ -286,7 +289,7 @@ void u54_1(void)
     sprintf(message, "\n\r - read status: %d ", ret_status);
     MSS_UART_polled_tx_string(g_uart, message);
 
-    enable_emmc(MEMORY);
+//    enable_emmc(MEMORY);
 
     while (1)
     {
@@ -366,13 +369,15 @@ static int8_t mmc_init_emmc(void)
     }
     else
     {
+#if 0
         ASSERT(mss_does_xml_ver_support_switch() == true)
 
         if (switch_mssio_config(EMMC_MSSIO_CONFIGURATION) == false)
         {
             while(1u);
         }
-        switch_external_mux(EMMC_MSSIO_CONFIGURATION);
+        switch_demux_using_fabric_ip(EMMC_MSSIO_CONFIGURATION);
+#endif
         /* eMMC configuration */
         g_mmc.clk_rate = MSS_MMC_CLOCK_50MHZ;
         g_mmc.card_type = MSS_MMC_CARD_TYPE_MMC;
