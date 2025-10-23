@@ -1,0 +1,176 @@
+```markdown
+# ⚙️ Lab Control System
+
+This repository provides a unified system to **automate setup and control of embedded lab equipment**,  
+including cameras, power supplies, UARTs, and CAN interfaces.  
+
+The goal is to make the environment **fully reproducible and hardware-independent**,  
+so each board always uses the same USB ports and setup commands — even after rebooting.
+
+---
+
+## 📂 Project Structure
+
+```
+
+lab-control/
+├── common/             # Reusable modules (power, UART, CAN, etc.)
+│   ├── power.py
+│   ├── uart.py
+│   ├── can.py
+│   └── **init**.py
+├── config/
+│   ├── devices.yaml    # Device configuration (ports, power channels, etc.)
+│   └── power.yaml      # Optional power configuration
+├── devices/            # Device-specific scripts
+│   ├── L50.py
+│   ├── SSA.py
+│   ├── WAC.py
+│   └── **init**.py
+└── README.md
+
+````
+
+---
+
+## 🧩 Features
+
+- Persistent device names using **udev rules**
+- Unified CLI interface for every board
+- Modular Python architecture
+- Automatic power control (Rigol DP932E)
+- UART & CAN setup automation
+- Easily extendable to new devices
+
+---
+
+## ⚙️ Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone git@github.com:youruser/lab-control.git
+   cd lab-control
+````
+
+2. **Install dependencies**
+
+   ```bash
+   pip install python-ivi pyvisa
+   ```
+
+3. **Set up persistent device names**
+   Create a `udev` rule file:
+
+   ```bash
+   sudo nano /etc/udev/rules.d/99-lab-boards.rules
+   ```
+
+   Example:
+
+   ```udev
+   # UART - L50 Camera
+   SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="B00007MO", SYMLINK+="ttyUSB-l50"
+   ```
+
+   Reload and apply:
+
+   ```bash
+   sudo udevadm control --reload-rules
+   sudo udevadm trigger
+   ```
+
+4. **Edit `config/devices.yaml`**
+   Define your boards and their resources:
+
+   ```yaml
+   L50:
+     uart: /dev/ttyUSB-l50
+     can: can-l50
+     power_channel: 0
+     power_resource: "USB0::6833::42152::DP9D264501280::0::INSTR"
+
+   SSA:
+     uart: /dev/ttyUSB-ssa
+     can: can-ssa
+     power_channel: 1
+     power_resource: "USB0::6833::42152::DP9D264501280::0::INSTR"
+   ```
+
+---
+
+## 🚀 Usage
+
+Each device has its own Python script under `devices/`.
+
+### Setup interfaces
+
+```bash
+python3 devices/L50.py set_up UART
+python3 devices/L50.py set_up CAN
+```
+
+### Control power
+
+```bash
+python3 devices/L50.py power ON
+python3 devices/L50.py power OFF
+```
+
+---
+
+## 🧪 Example Output
+
+```bash
+$ python3 devices/L50.py power ON
+UART configured on /dev/ttyUSB-l50
+CAN interface can-l50 is up
+{'voltage': 5.002, 'current': 0.313}
+```
+
+---
+
+## 🧠 Extending the System
+
+To add a new board:
+
+1. Add a new entry in `config/devices.yaml`
+2. Create a new script in `devices/` (you can copy `L50.py`)
+3. Adjust UART/CAN/power logic if needed
+
+Example command structure:
+
+```bash
+python3 devices/<BOARD>.py set_up UART
+python3 devices/<BOARD>.py set_up CAN
+python3 devices/<BOARD>.py power ON
+python3 devices/<BOARD>.py power OFF
+```
+
+---
+
+## 🧰 Notes
+
+* All UART and CAN devices use persistent symlinks defined in `/etc/udev/rules.d/99-lab-boards.rules`
+* The Rigol DP932E is accessed via the **python-ivi** interface
+* Each command can be easily extended to perform device-specific actions (e.g., flashing firmware, running tests, etc.)
+
+---
+
+## 👨‍🔧 Example Workflow
+
+1. Plug in your lab board and power supply
+2. Run:
+
+   ```bash
+   python3 devices/L50.py power ON
+   python3 devices/L50.py set_up UART
+   python3 devices/L50.py set_up CAN
+   ```
+3. Start your development or testing session — all ports and interfaces will be correctly configured.
+
+---
+
+**Author:** Abel Tarragó
+**Purpose:** Consistent, automated setup for embedded system testing and validation in the lab.
+
+```

@@ -1,0 +1,13 @@
+L50:
+  uart0: /dev/ttyUSB-l50-uart0
+  uart1: /dev/ttyUSB-l50-uart1
+  can: can-l50
+  eth: eth-lab
+  power_channel: 0
+  power_resource: "USB0::6833::42152::DP9D264501280::0::INSTR"
+
+EM009:
+  uart: /dev/ttyUSB-em009
+  can: can-em009
+  power_channel: 1
+  power_resource: "USB0::6833::42152::DP9D264501280::0::INSTR"

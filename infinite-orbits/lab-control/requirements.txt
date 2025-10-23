@@ -1,0 +1,7 @@
+# Core dependencies
+pyvisa==1.14.1
+python-ivi==0.12.0
+pyyaml==6.0.2
+
+# Optional (for logging or extended automation)
+rich==13.7.1

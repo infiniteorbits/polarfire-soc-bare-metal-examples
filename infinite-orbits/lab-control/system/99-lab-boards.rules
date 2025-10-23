@@ -1,0 +1,18 @@
+# =======================================
+# Lab USB rules — OrbSight setup
+# =======================================
+
+# --- Camera L50 ---
+# UART 0
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="B00007MO", SYMLINK+="ttyUSB-l50-uart0"
+
+# UART 1
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="BG023ISD", SYMLINK+="ttyUSB-l50-uart1"
+
+# CAN interface
+SUBSYSTEM=="net", ACTION=="add", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="606f", ATTRS{serial}=="003A00185546570120393438", NAME="can-l50"
+
+# Ethernet adapter - Remote server link (ASIX AX88179)
+SUBSYSTEM=="net", ACTION=="add", ATTRS{idVendor}=="0b95", ATTRS{idProduct}=="1790", ATTRS{serial}=="0055F302", NAME="eth-l50"
+
+
