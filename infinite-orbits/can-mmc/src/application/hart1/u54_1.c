@@ -286,7 +286,7 @@ void u54_1(void)
     sprintf(message, "\n\r - read status: %d ", ret_status);
     MSS_UART_polled_tx_string(g_uart, message);
 
-    enable_emmc(MEMORY);
+    //enable_emmc(MEMORY);
 
     while (1)
     {
@@ -366,6 +366,7 @@ static int8_t mmc_init_emmc(void)
     }
     else
     {
+#if 0
         ASSERT(mss_does_xml_ver_support_switch() == true)
 
         if (switch_mssio_config(EMMC_MSSIO_CONFIGURATION) == false)
@@ -373,6 +374,7 @@ static int8_t mmc_init_emmc(void)
             while(1u);
         }
         switch_external_mux(EMMC_MSSIO_CONFIGURATION);
+#endif
         /* eMMC configuration */
         g_mmc.clk_rate = MSS_MMC_CLOCK_50MHZ;
         g_mmc.card_type = MSS_MMC_CARD_TYPE_MMC;
