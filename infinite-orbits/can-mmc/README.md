@@ -37,7 +37,7 @@ It includes:
 
 ## 2️⃣ Python Tool
 
-**File:** `send_wic_over_can.py`
+**File:** `01-bin_transfer.py`
 **Purpose:** Send a binary file over CAN to the board.
 
 ### Requirements
