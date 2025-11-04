@@ -88,7 +88,7 @@ typedef enum
     BLOCK_TRANSFER_COMPLETE,
     TRANSFER_ERROR
 } transfer_status_t;
-static      transfer_status_t       g_stream_status = STREAM_INCOMPLETE;
+static volatile transfer_status_t   g_stream_status = STREAM_INCOMPLETE;
 extern volatile struct cond_var_t   g_cond_var;
 axi4dma_stream_desc_t*              g_tdest0_stream_descriptor;
 uint64_t                            g_frame_addr;
@@ -303,12 +303,13 @@ void u54_1(void)
 
     /// Reset the module
     ///
-    /// stream_ctrl = (void *)  (STREAM_GEN_BASE_ADDR + 0x8);
-    /// *stream_ctrl = 0x1u;
+    /// stream_ctrl = (void *)  (STREAM_GEN_BASE_ADDR + 0x4);
+    /// *stream_ctrl = 0x1u << 6u;
+    /// sleep_ms(2000);
 
     /// configure stream size
     ///
-    stream_ctrl = (void *) STREAM_GEN_BASE_ADDR; /// address of size register
+    stream_ctrl = (void *)  (STREAM_GEN_BASE_ADDR);
     *stream_ctrl = STREAM_SIZE; /// set size based on define
 
 
@@ -341,6 +342,7 @@ void u54_1(void)
     /// bit 1 - Pattern
     /// bit 2 - Pattern thru sensor lane
     /// bit 5:4 - High gain 00 Low Gain 01 HDR 10
+    /// bit 6 - Reset module
     ///
     *stream_ctrl = 0x1 | (0x01 << 4);
 
