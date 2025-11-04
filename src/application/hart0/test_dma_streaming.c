@@ -2,7 +2,7 @@
  * test_dma_streaming.c
  *
  *  Created on: 30 Oct 2025
- *      Author: Nick
+ *      Author: Trajce Nikolov
  */
 #include <stdio.h>
 #include <stdint.h>
@@ -21,7 +21,6 @@
 
 #include "inc/cond_var.h"
 #include "inc/protocol.h"
-#include "inc/net.h"
 
 #include "messaging.h"
 
@@ -31,9 +30,10 @@ extern volatile uint64_t            DDR_data_addr;
 extern mss_uart_instance_t*         g_uart;
 extern mss_mac_instance_t*          g_test_mac;
 extern mss_mac_cfg_t                g_mac_config;
-struct cond_var_t                   g_cond_var;
+volatile struct cond_var_t          g_cond_var;
 
-uint16_t htons(uint16_t hostshort)
+uint16_t
+htons(uint16_t hostshort)
 {
     uint16_t result;
     uint8_t* host_ptr = (uint8_t*)&hostshort;
@@ -82,8 +82,7 @@ test_dma_streaming(void)
 
     /// Set up the Ethertype
     ///
-    frame.eth_type = htons(0x0800); /// Custom Ethertype
-
+    frame.eth_type = htons(0x0800);
     struct packet_t packet;
 
     uint8_t     msg[128] = {0};
@@ -112,16 +111,14 @@ test_dma_streaming(void)
     g_test_mac = &g_mac0;
     g_test_mac->mac_base->NETWORK_CONFIG |= GEM_JUMBO_FRAMES;
 
-    uint32_t num_chunks = RESOLUTION_X * RESOLUTION_Y * 2/ chunks_size;
-    uint8_t* chunk_ptr = data;
-
-    struct packet_t* pckt = (struct packet_t* )frame.payload;
+    uint32_t            num_chunks = RESOLUTION_X * RESOLUTION_Y * 2/ chunks_size;
+    volatile uint8_t*   chunk_ptr = (uint8_t*)data;
+    struct packet_t*    pckt = (struct packet_t* )frame.payload;
 
 
     while (2U)
     {
         cond_var_wait(&g_cond_var);
-
 
 #ifdef MSS_MAC_SPEED_TEST
         g_test_mac->queue[0].nb_available_tx_desc = (uint32_t)MSS_MAC_TX_RING_SIZE;
@@ -135,14 +132,14 @@ test_dma_streaming(void)
             chunk_ptr = (void*)(DDR_data_addr + i*chunks_size);
 
             init_packet(pckt);
-            set_packet_data(pckt, RESOLUTION_X, RESOLUTION_Y, chunk_ptr, chunks_size);
+            set_packet_data(pckt, RESOLUTION_X, RESOLUTION_Y, (uint8_t*)chunk_ptr, chunks_size);
 
             pckt->chunk = i;
             pckt->num_chunks = num_chunks;
 
             uint8_t tx_status = MSS_MAC_send_pkt(g_test_mac,
                                  0,
-                                 &frame,
+                                 (uint8_t const * )&frame,
                                  sizeof(frame) | 0x0 /*CRC*/,
                                  (void *)0);
 
@@ -152,11 +149,11 @@ test_dma_streaming(void)
         }
 #endif
 
-
-        cond_var_signal(&g_cond_var);
-
         sprintf((char*)msg,"\n\r Frame sent : %d\n\r", frame_cnt++);
         PRINT_STRING(msg);
+
+        cond_var_signal(&g_cond_var);
+        sleep_ms(10000);
 
         /// if (++frame_cnt > 20) break;
     }

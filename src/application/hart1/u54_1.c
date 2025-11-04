@@ -9,6 +9,11 @@
  * PolarFire SoC MSS GPIO interrupt example project
  */
 
+
+/// Some snippets taken from here
+/// https://github.com/polarfire-soc/polarfire-soc-bare-metal-examples/tree/main/driver-examples/fpga-ip/CoreAXI4DMAController/mpfs-coreaxi4dma-stream
+///
+
 #include <stdio.h>
 #include <string.h>
 
@@ -18,6 +23,14 @@
 #include <drivers/fpga_ip/CoreAXI4DMAController/core_axi4dmacontroller.h>
 
 #include <inc/cond_var.h>
+
+/// CoreAXI4 DMA Controller Interrupt Bit Masks
+/// For full details see Handbook section 5.3
+///
+#define DMA_OPERATION_STATUS_BIT_MASK           (0xFu)
+#define DMA_DESCRIPTOR_NUM_BIT_MASK             (0x3F0u)
+#define IR_STATUS_DESCRIPTOR_NUM_BIT_SHIFT      (0x4u)
+#define RETURN_DESCRIPTOR_INTERRUPT_NUMBER(X)   (((X)&DMA_DESCRIPTOR_NUM_BIT_MASK) >> IR_STATUS_DESCRIPTOR_NUM_BIT_SHIFT)
 
 /// Defines to configure the memory peripheral used as the stream destination
 ///
@@ -31,12 +44,7 @@
 
 /// Turn on to display pixel comparation in the pattern mode
 ///
-#define DEBUG_PRINT 1U
-
-/// Turn debug prints and limit
-/// the num of lines processed to 4 lines
-///
-#define DEBUG 1U
+/// #define DEBUG_PRINT 1U
 
 
 /// Change these when the resolution changes
@@ -49,8 +57,8 @@
 /// The first pixel contains the frame counter
 /// The second pixel contains the Line number
 ///
-#define STREAM_SIZE         (NUM_ROWS * NUM_COLUMNS / 2)
-#define STREAM_SIZE_BYTES   (STREAM_SIZE * 4) //
+#define STREAM_SIZE         ((NUM_ROWS * NUM_COLUMNS / 2))
+#define STREAM_SIZE_BYTES   (STREAM_SIZE * 4)
 
 /// Defining memory addresses
 ///
@@ -61,55 +69,172 @@
 #define DMA_CTRLR_BASE_ADDR     0x60020000u
 #define STREAM_OFFSET           0x1000u
 
+/// Stream configuration bit defines
+///
+#define STREAM_DEST_OPERAND          (0x0001u << 0u)
+#define STREAM_DEST_DATA_READY       (0x0001u << 2u)
+#define STREAM_DESCRIPTOR_VALID      (0x0001u << 3u)
+
 
 /// CoreAXI4DMAController instance at base address 0x60020000u
 ///
 axi4dma_instance_t                  g_dmac;
 static      uint8_t                 g_info_string[200] = {0};
-volatile    uint8_t                 g_stream_status = 0u;
-extern struct cond_var_t            g_cond_var;
+
+typedef enum
+{
+    STREAM_INCOMPLETE,
+    STREAM_TRANSFER_COMPLETE,
+    BLOCK_TRANSFER_COMPLETE,
+    TRANSFER_ERROR
+} transfer_status_t;
+static      transfer_status_t       g_stream_status = STREAM_INCOMPLETE;
+extern volatile struct cond_var_t   g_cond_var;
+axi4dma_stream_desc_t*              g_tdest0_stream_descriptor;
+uint64_t                            g_frame_addr;
 
 /// pointer to location in DDR where stream will written to
 ///
 volatile uint32_t *DDR_data_ptr;
 volatile uint64_t DDR_data_addr;
 
+typedef enum
+{
+    NO_ERROR,
+    UNKNOWN_DESCRIPTOR_TRANSFER_COMPLETE,
+    WRITE_ERROR,
+    READ_ERROR,
+    INVALID_DESCRIPTOR,
+    UNKNOWN_ERROR
+} dma_error_status_t;
+
+static volatile dma_error_status_t  g_dma_transfer_error_type = NO_ERROR;
+
+void
+report_transfer_error(void)
+{
+    switch (g_dma_transfer_error_type)
+    {
+        case UNKNOWN_DESCRIPTOR_TRANSFER_COMPLETE:
+            MSS_UART_polled_tx_string(&g_mss_uart1_lo,
+                                      "\r\n Error!\r\nTransfer Complete set from unknown"
+                                      " descirptor\r\n");
+            break;
+
+        case WRITE_ERROR:
+            MSS_UART_polled_tx_string(&g_mss_uart1_lo, "\r\n Error!\r\nDMA Write Error\r\n");
+            break;
+
+        case READ_ERROR:
+            MSS_UART_polled_tx_string(&g_mss_uart1_lo, "\r\n Error!\r\nDMA Read Error\r\n");
+            break;
+
+        case INVALID_DESCRIPTOR:
+            MSS_UART_polled_tx_string(&g_mss_uart1_lo, "\r\n Error!\r\nDMA Invalid Descirptor\r\n");
+            break;
+
+        case UNKNOWN_ERROR:
+            MSS_UART_polled_tx_string(&g_mss_uart1_lo, "\r\n Error!\r\nDMA Unknown Error\r\n");
+            break;
+
+        default:
+            MSS_UART_polled_tx_string(&g_mss_uart1_lo, "\r\n Error!\r\nDMA Unknown Error\r\n");
+            break;
+    }
+    g_dma_transfer_error_type = NO_ERROR;
+}
+
 /// The CoreAXI4DMAController Interrupt 0 via F2H interrupt.
 ///
-uint8_t fabric_f2h_2_plic_IRQHandler(void)
+uint8_t
+PLIC_f2m_2_IRQHandler(void)
 {
-    ///  Check if the stream is complete
-    ///
-    uint32_t *          DMA_ptr;
-    axi4dma_desc_id_t   desc_id;
-    uint32_t            ext_ptr_addr;
+    axi4dma_desc_id_t dma_descriptor_id;
+    uint32_t external_descriptor_address;
+    uint32_t dma_transfer_status = 0u;
+    uint32_t descriptor = 0u;
 
-    uint32_t irq_status = AXI4DMA_transfer_status(&g_dmac, IRQ_NUM_0, &desc_id, &ext_ptr_addr);
-    if ((irq_status && 0x210))
+    uint32_t irq_status = AXI4DMA_transfer_status(&g_dmac,
+                                                  IRQ_NUM_0,
+                                                  &dma_descriptor_id,
+                                                  &external_descriptor_address);
+
+    dma_transfer_status = irq_status & DMA_OPERATION_STATUS_BIT_MASK;
+    descriptor = RETURN_DESCRIPTOR_INTERRUPT_NUMBER(irq_status);
+
+    switch (dma_transfer_status)
     {
-#ifdef DEBUG
-        MSS_UART_polled_tx_string(&g_mss_uart1_lo, "\r\n > Stream complete IRQ");
-        sleep_ms(1000);
-#endif
-        g_stream_status = 1;
+        case AXI4DMA_OP_COMPLETE_INTR_MASK:
+            switch (descriptor)
+            {
+                case STREAM_DESC_33:
+                    g_stream_status = STREAM_TRANSFER_COMPLETE;
+                    break;
+
+                case INTRN_DESC_0:
+                    g_stream_status = BLOCK_TRANSFER_COMPLETE;
+                    break;
+
+                default:
+                    g_stream_status = TRANSFER_ERROR;
+                    g_dma_transfer_error_type = UNKNOWN_DESCRIPTOR_TRANSFER_COMPLETE;
+                    break;
+            }
+            break;
+
+        case AXI4DMA_WR_ERR_INTR_MASK:
+            g_stream_status = TRANSFER_ERROR;
+            g_dma_transfer_error_type = WRITE_ERROR;
+            break;
+
+        case AXI4DMA_RD_ERR_INTR_MASK:
+            g_stream_status = TRANSFER_ERROR;
+            g_dma_transfer_error_type = READ_ERROR;
+            break;
+
+        case AXI4DMA_INVALID_DESC_INTR_MASK:
+            g_stream_status = TRANSFER_ERROR;
+            g_dma_transfer_error_type = INVALID_DESCRIPTOR;
+            break;
+
+        default:
+            g_stream_status = TRANSFER_ERROR;
+            g_dma_transfer_error_type = UNKNOWN_ERROR;
+            break;
     }
 
-    AXI4DMA_clear_irq(&g_dmac, IRQ_NUM_0, AXI4DMA_OP_COMPLETE_INTR_MASK |
-                       AXI4DMA_WR_ERR_INTR_MASK |
-                       AXI4DMA_RD_ERR_INTR_MASK  |
-                       AXI4DMA_INVALID_DESC_INTR_MASK );
+    uint8_t error_message[50] = {0};
+    sprintf(error_message, " > Transfer Status: %i\r\n", dma_transfer_status);
+    MSS_UART_polled_tx_string(&g_mss_uart1_lo, error_message);
+
+    AXI4DMA_clear_irq(&g_dmac,
+                      IRQ_NUM_0,
+                      AXI4DMA_OP_COMPLETE_INTR_MASK | AXI4DMA_WR_ERR_INTR_MASK |
+                      AXI4DMA_RD_ERR_INTR_MASK | AXI4DMA_INVALID_DESC_INTR_MASK);
+
+    /// Set the stream transfer to destination memory address
+    ///
+    if (g_stream_status == STREAM_TRANSFER_COMPLETE)
+    AXI4DMA_configure_stream(&g_dmac,
+                              g_tdest0_stream_descriptor,
+                              TDEST_0,
+                              STREAM_DEST_OPERAND | STREAM_DEST_DATA_READY | STREAM_DESCRIPTOR_VALID,
+                              STREAM_SIZE_BYTES,
+                              g_frame_addr);
+
 
     return EXT_IRQ_KEEP_ENABLED;
 }
 
 void u54_1(void)
 {
-    uint32_t *stream_ctrl; /// pointer to stream controller
+    uint32_t *stream_ctrl;      /// pointer to stream controller
+    uint32_t *stream_ctrl_C;    /// exposure register
 
 #ifdef DDR_CACHED
     ///  use cached DDR as the stream memory destination
     ///
-    volatile uint64_t ddr_loc = DDR_BASE_ADDR;
+    uint64_t ddr_loc = DDR_BASE_ADDR;
 #elif defined(DDR_NCACHED)
     /// use non-cached DDR as the stream memory destination
     ///
@@ -126,9 +251,12 @@ void u54_1(void)
     uint32_t ddr_loc = DDR_BASE_ADDR;
 #endif
 
+    g_frame_addr = ddr_loc + STREAM_OFFSET;
+
     cond_var_init(&g_cond_var);
 
-    axi4dma_stream_desc_t* tdest0_stream_descriptor = (axi4dma_stream_desc_t*)(uint64_t)ddr_loc;
+    g_tdest0_stream_descriptor = (axi4dma_stream_desc_t*)(uint64_t)ddr_loc;
+
 
     /* Clear pending software interrupt in case there was any.
      * Enable only the software interrupt so that the E51 core can bring this
@@ -173,10 +301,16 @@ void u54_1(void)
     PLIC_SetPriority(FABRIC_F2H_2_PLIC, 2);
     PLIC_EnableIRQ(FABRIC_F2H_2_PLIC);
 
+    /// Reset the module
+    ///
+    /// stream_ctrl = (void *)  (STREAM_GEN_BASE_ADDR + 0x8);
+    /// *stream_ctrl = 0x1u;
+
     /// configure stream size
     ///
     stream_ctrl = (void *) STREAM_GEN_BASE_ADDR; /// address of size register
     *stream_ctrl = STREAM_SIZE; /// set size based on define
+
 
     /// CoreAXI4DMAController IP base address in libero design = 0x60020000u
     ///
@@ -185,11 +319,11 @@ void u54_1(void)
     /// Set the stream transfer to destination memory address
     ///
     AXI4DMA_configure_stream(&g_dmac,
-                              tdest0_stream_descriptor,
+                              g_tdest0_stream_descriptor,
                               TDEST_0,
-                              0xD, /// {Descriptor Valid, Destination Data Ready, Destination Operand}
+                              STREAM_DEST_OPERAND | STREAM_DEST_DATA_READY | STREAM_DESCRIPTOR_VALID,
                               STREAM_SIZE_BYTES,
-                              (ddr_loc + STREAM_OFFSET));
+                              g_frame_addr);
 
     /// The stream descriptor is associated with IRQ0 in the IP
     ///
@@ -212,22 +346,22 @@ void u54_1(void)
 
     /// wait for stream to complete
     ///
-    if (g_stream_status == 0) {
+    if (g_stream_status == STREAM_INCOMPLETE) {
         MSS_UART_polled_tx_string(&g_mss_uart1_lo, "\r\n > Waiting for transfer to complete");
-        sleep_ms(1000);
     }
 
 
     /// Wait for the interrupt to raise it
     ///
-    while(g_stream_status == 0){
-        asm volatile ("nop");
+    while (STREAM_INCOMPLETE == g_stream_status)
+    {
+       asm volatile("nop");
     }
 
     /// Exposure
     ///
-    stream_ctrl = (void *)  (STREAM_GEN_BASE_ADDR + 0xC);
-    *stream_ctrl = 1000;
+    stream_ctrl_C = (void *)  (STREAM_GEN_BASE_ADDR + 0xC);
+    *stream_ctrl_C = 10;
 
 
     /// verify data written matches expected
@@ -235,18 +369,23 @@ void u54_1(void)
     volatile uint8_t fail = 0;
 
     MSS_UART_polled_tx_string(&g_mss_uart1_lo, "\r\n > Verifying DATA\n\r\n\r");
-    sleep_ms(1000);
+
 
     uint32_t pixel_pattern = 0u;
     uint16_t pixel_counter = 0u;
     uint16_t frame_counter = 0u;
     uint8_t  first_frame = 1u;
+    uint16_t our_frame_counter = 0u;
+    uint64_t pattern_count = 0u;
 
     DDR_data_addr =  ddr_loc + STREAM_OFFSET;
+    DDR_data_ptr = (void*)(ddr_loc + STREAM_OFFSET); /// Stream destination address
     while (1)
     {
         fail = 0u;
+
         DDR_data_ptr = (void*)(ddr_loc + STREAM_OFFSET); /// Stream destination address
+        DDR_data_addr = (uint64_t)(DDR_data_ptr);
 
         cond_var_signal(&g_cond_var);
 
@@ -267,19 +406,23 @@ void u54_1(void)
         else
             ++frame_counter;
 
+        *stream_ctrl_C = (++our_frame_counter * 50) % 200; /// for testing
+        our_frame_counter = our_frame_counter % 4;
+
         /// Line number starts from 0
         ///
         for(volatile uint32_t y = 0; y < NUM_ROWS; ++y)
         {
+
             pixel_counter = 2u;
             for(volatile uint32_t x = 0; x < NUM_COLUMNS/2; ++x)
             {
-#ifdef DEBUG
-                if (y > 4) continue;
-#endif
                 volatile uint32_t texel = *DDR_data_ptr;
-                uint16_t hi = (texel >> 16);
-                uint16_t lo = texel & 0xFFFF;
+
+                if (pattern_count++ >= STREAM_SIZE)
+                {
+                    pattern_count = 0u;
+                }
 
                 /// The second pixel of each line beginning is the Line number
                 ///
@@ -287,10 +430,6 @@ void u54_1(void)
                     pixel_pattern = (y << 16) | (frame_counter);
                 else
                     pixel_pattern = (pixel_counter++) | ((pixel_counter++) << 16);
-
-
-                ///*DDR_data_ptr = texel;
-
 
                 if (pixel_pattern != texel)
                 {
@@ -311,12 +450,6 @@ void u54_1(void)
             }
         }
 
-        /// Signal the sending U54_3 we've got an image
-        ///
-        cond_var_wait(&g_cond_var);
-
-
-
         if (fail == 0)
         {
             sprintf(g_info_string, " >> Fm %08d | Stream data match is successful       \r\n", frame_counter);
@@ -333,7 +466,10 @@ void u54_1(void)
             sprintf(g_info_string, " >> Fm %08d | Stream data match failed                  \r\n", frame_counter);
             MSS_UART_polled_tx_string(&g_mss_uart1_lo, g_info_string);
         }
-    }
+
+        cond_var_wait(&g_cond_var);
+
+     }
 
     while (1u)
     {

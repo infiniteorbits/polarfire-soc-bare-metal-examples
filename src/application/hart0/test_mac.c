@@ -690,7 +690,7 @@ uint8_t
 test_mac(void)
 {
 
-    test_display_start("MAC Ethernet Loopback Test");
+    test_display_start("MAC Ethernet Test");
     mac_task(0);
     test_display_finished();
 

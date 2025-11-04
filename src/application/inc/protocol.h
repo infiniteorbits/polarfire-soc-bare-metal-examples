@@ -51,7 +51,7 @@ inline void init_packet(struct packet_t* pckt)
     pckt->height = RESOLUTION_Y;
     pckt->crc = 0u;
     pckt->buffer_size = 0u;
-    pckt->length = sizeof(struct packet_t)-(RESOLUTION_Y*RESOLUTION_X); /// we add the correct one by using set_data
+    pckt->length = sizeof(struct packet_t);
 }
 
 

@@ -54,7 +54,7 @@ void test_init_peripherials(void)
 
     /// Disable other harts. we enable as needed
     ///
-    CLINT->MSIP[1] = 1;
+    CLINT->MSIP[1] = 0;
     CLINT->MSIP[2] = 0;
     CLINT->MSIP[3] = 0;
     CLINT->MSIP[4] = 0;
@@ -146,7 +146,10 @@ void e51(void)
 
     display_version();
 
-    test_result_mac         = test_mac();                   /// This one works!
+    test_result_mac         = test_mac();
+
+    CLINT->MSIP[1] = 1;     /// Launch hart1
+
     test_result_dma         = test_dma_streaming();
 
     test_display_start("Tests Results Summary");

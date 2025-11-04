@@ -17,20 +17,20 @@ struct cond_var_t{
     volatile bool signaled;
 } ;
 
-extern struct cond_var_t g_cond_var;
+extern volatile struct cond_var_t g_cond_var;
 
 // Initialize a condition variable
-inline void cond_var_init(struct cond_var_t* cv) {
+inline void cond_var_init(volatile struct cond_var_t* cv) {
     cv->signaled = false;
 }
 
 // Signal a condition variable
-inline void cond_var_signal(struct cond_var_t* cv) {
+inline void cond_var_signal(volatile struct cond_var_t* cv) {
     cv->signaled = true;
 }
 
 // Wait on a condition variable
-inline void cond_var_wait(struct cond_var_t* cv) {
+inline void cond_var_wait(volatile struct cond_var_t* cv) {
     while (!cv->signaled) { /// Add timeout
         // Busy-waiting, not recommended for production use
     }
