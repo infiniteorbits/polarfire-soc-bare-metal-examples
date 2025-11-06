@@ -3130,7 +3130,7 @@ static uint8_t \
                  * Check the result
                  */
 #ifdef DEBUG_DDR_INIT
-                (void)uprint32(g_debug_uart, "\n\rLane passed successful:",laneToTest);
+                (void)uprint32(g_debug_uart, "\n\rLane pass is successful:",laneToTest);
                 (void)uprint32(g_debug_uart, " All lanes status:",calib_data.write_cal.status_lower);
 #endif
                 uint32_t laneToCheck;
