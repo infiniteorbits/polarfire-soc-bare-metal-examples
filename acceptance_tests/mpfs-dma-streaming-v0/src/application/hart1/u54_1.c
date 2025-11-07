@@ -4,10 +4,23 @@
  *
  * SPDX-License-Identifier: MIT
  *
- * Application code running on U54_2
+ * Application code running on U54_1
  *
  * PolarFire SoC MSS GPIO interrupt example project
  */
+
+///
+/// File            | u54_1.c
+/// Description     | Streaming from AXI4DMA -> DDR -> Ethernet
+///
+/// Author          | Trajce Nikolov    | trajce.nikolov.nick@gmail.com
+///                                     | trajce.nikolov.nick@outlook.com
+/// Date            | October 2025
+///
+/// Adopted by      | RFIM Space
+/// Copyright 2025  | RFIM Space
+///
+///
 
 
 /// Some snippets taken from here
@@ -91,6 +104,7 @@ typedef enum
 static volatile transfer_status_t   g_stream_status = STREAM_INCOMPLETE;
 extern volatile struct cond_var_t   g_cond_var_hart0;
 extern volatile struct cond_var_t   g_cond_var_hart1;
+volatile struct cond_var_t          g_cond_var_sync;
 axi4dma_stream_desc_t*              g_tdest0_stream_descriptor;
 uint64_t                            g_frame_addr;
 
@@ -213,16 +227,19 @@ PLIC_f2m_2_IRQHandler(void)
                       AXI4DMA_OP_COMPLETE_INTR_MASK | AXI4DMA_WR_ERR_INTR_MASK |
                       AXI4DMA_RD_ERR_INTR_MASK | AXI4DMA_INVALID_DESC_INTR_MASK);
 
-    /// Set the stream transfer to destination memory address
-    ///
     if (g_stream_status == STREAM_TRANSFER_COMPLETE)
     {
+        /// Set the stream transfer to destination memory address
+        ///
         AXI4DMA_configure_stream(&g_dmac,
-                              g_tdest0_stream_descriptor,
-                              TDEST_0,
-                              STREAM_DEST_OPERAND | STREAM_DEST_DATA_READY | STREAM_DESCRIPTOR_VALID,
-                              STREAM_SIZE_BYTES,
-                              g_frame_addr);
+                                  g_tdest0_stream_descriptor,
+                                  TDEST_0,
+                                  STREAM_DEST_OPERAND | STREAM_DEST_DATA_READY | STREAM_DESCRIPTOR_VALID,
+                                  STREAM_SIZE_BYTES,
+                                  g_frame_addr);
+
+        cond_var_signal(&g_cond_var_sync);
+        cond_var_signal(&g_cond_var_hart1);
     }
 
     return EXT_IRQ_KEEP_ENABLED;
@@ -257,6 +274,7 @@ void u54_1(void)
 
     cond_var_init(&g_cond_var_hart0);
     cond_var_init(&g_cond_var_hart1);
+    cond_var_init(&g_cond_var_sync);
 
     g_tdest0_stream_descriptor = (axi4dma_stream_desc_t*)(uint64_t)ddr_loc;
 
@@ -369,13 +387,12 @@ void u54_1(void)
     ///
     while (STREAM_INCOMPLETE == g_stream_status)
     {
-       cond_var_signal(&g_cond_var_hart0);
     }
 
     /// Exposure
     ///
     stream_ctrl_C = (void *)  (STREAM_GEN_BASE_ADDR + 0xC);
-    *stream_ctrl_C = 150;
+    *stream_ctrl_C = 250;
 
 
     /// verify data written matches expected
@@ -397,6 +414,8 @@ void u54_1(void)
     while (1)
     {
         fail = 0u;
+
+        cond_var_wait(&g_cond_var_sync);
 
         DDR_data_ptr = (void*)(ddr_loc + STREAM_OFFSET); /// Stream destination address
         DDR_data_addr = (uint64_t)(DDR_data_ptr);
@@ -420,7 +439,7 @@ void u54_1(void)
 #if 0
         /// Cycle thru some exposure values for testing purposes
         ///
-        *stream_ctrl_C = (++our_frame_counter * 50) % 200; /// for testing
+        *stream_ctrl_C = (++our_frame_counter * 25) % 150; /// for testing
         our_frame_counter = our_frame_counter % 4;
 #endif
 
@@ -483,9 +502,8 @@ void u54_1(void)
             MSS_UART_polled_tx_string(&g_mss_uart1_lo, g_info_string);
         }
 
-        cond_var_signal(&g_cond_var_hart1);
-        cond_var_wait(&g_cond_var_hart0);
 
+        cond_var_wait(&g_cond_var_hart0);
 
      }
 

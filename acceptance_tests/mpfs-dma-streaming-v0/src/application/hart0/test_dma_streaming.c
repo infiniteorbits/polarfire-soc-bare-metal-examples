@@ -1,9 +1,15 @@
-/*
- * test_dma_streaming.c
- *
- *  Created on: 30 Oct 2025
- *      Author: Trajce Nikolov
- */
+///
+/// File            | test_dma_streaming.c
+/// Description     | Streaming from AXI4DMA -> DDR -> Ethernet
+///
+/// Author          | Trajce Nikolov    | trajce.nikolov.nick@gmail.com
+///                                     | trajce.nikolov.nick@outlook.com
+/// Date            | October 2025
+///
+/// Copyright 2025  | RFIM Space
+///
+///
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -105,34 +111,64 @@ test_dma_streaming(void)
     volatile uint8_t*   chunk_ptr = (uint8_t*)data;
     struct packet_t*    pckt = (struct packet_t* )frame.payload;
 
+    uint16_t num_full_batches = num_chunks / (MSS_MAC_TX_RING_SIZE - 1);
+
     while (2U)
     {
+        cond_var_wait(&g_cond_var_hart1);
+
 #ifdef MSS_MAC_SPEED_TEST
-        for (volatile uint16_t i = 0; i != (MSS_MAC_TX_RING_SIZE - 1); i++)
+        data = (uint32_t*)DDR_data_addr;
+        uint16_t curr_chunk = 0;
+        uint16_t* data_ptr = (uint16_t*)((uint64_t)(data));
+
+        for (uint16_t b = 0; b < num_full_batches; ++b)
         {
-            uint16_t* data_ptr = (uint16_t*)(((uint64_t)(DDR_data_addr)) + i*chunks_size);
-            *data_ptr = i;
+            for (volatile uint16_t i = 0; i != (MSS_MAC_TX_RING_SIZE - 1); i++)
+            {
+
+                *data_ptr = curr_chunk++;
+                /// *(data_ptr+1) = 0xb007u;
+
+                tx_desc_tab[i].addr_low = (uint32_t)(((uint64_t)data_ptr) & 0xFFFFFFFFu);
+                tx_desc_tab[i].addr_high = (uint32_t)((((uint64_t)data_ptr) >> 32)& 0xFFFFFFFFu);
+
+                data_ptr += chunks_size /2;
+
+                tx_desc_tab[i].status = (packet_size & GEM_TX_DMA_BUFF_LEN) | GEM_TX_DMA_LAST;
+                tx_desc_tab[i + 1].status |= GEM_TX_DMA_WRAP | GEM_TX_DMA_USED;
+            }
+
+            g_test_mac->queue[0].nb_available_tx_desc = (uint32_t)MSS_MAC_TX_RING_SIZE;
+            uint8_t tx_status = MSS_MAC_send_pkts_fast(g_test_mac,
+                                    tx_desc_tab,
+                                    (packet_size & 0xFFFF) *
+                                    (MSS_MAC_TX_RING_SIZE - 1));
+
+        }
+
+        uint16_t num_remaining_chunks = num_chunks - curr_chunk;
+        for (volatile uint16_t i = 0; i < num_remaining_chunks; i++)
+        {
+            *data_ptr = curr_chunk++;
+            /// *(data_ptr+1) = 0xb007u;
 
             tx_desc_tab[i].addr_low = (uint32_t)(((uint64_t)data_ptr) & 0xFFFFFFFFu);
             tx_desc_tab[i].addr_high = (uint32_t)((((uint64_t)data_ptr) >> 32)& 0xFFFFFFFFu);
 
+            data_ptr += chunks_size /2;
+
             /// Mark as last buffer for frame
             ///
-            tx_desc_tab[i].status =
-                (packet_size & GEM_TX_DMA_BUFF_LEN) | GEM_TX_DMA_LAST;
-
+            tx_desc_tab[i].status = (packet_size & GEM_TX_DMA_BUFF_LEN) | GEM_TX_DMA_LAST;
             tx_desc_tab[i + 1].status |= GEM_TX_DMA_WRAP | GEM_TX_DMA_USED;
         }
         g_test_mac->queue[0].nb_available_tx_desc = (uint32_t)MSS_MAC_TX_RING_SIZE;
         uint8_t tx_status = MSS_MAC_send_pkts_fast(g_test_mac,
                                 tx_desc_tab,
                                 (packet_size & 0xFFFF) *
-                                (MSS_MAC_TX_RING_SIZE - 1));
+                                num_remaining_chunks);
 
-        /// Now the sending is fast, but on the other side
-        /// is not that fast
-        ///
-        delay(DELAY_CYCLES_100MS * 100);
 #else
         for (volatile uint32_t i = 0; i < num_chunks; ++i)
         {
@@ -160,7 +196,7 @@ test_dma_streaming(void)
         PRINT_STRING(msg);
 
         cond_var_signal(&g_cond_var_hart0);
-        cond_var_wait(&g_cond_var_hart1);
+
 
         /// if (++frame_cnt > 20) break;
     }

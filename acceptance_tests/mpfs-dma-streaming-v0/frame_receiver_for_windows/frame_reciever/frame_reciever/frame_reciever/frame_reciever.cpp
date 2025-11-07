@@ -1,7 +1,7 @@
 // frame_reciever.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
-/// #define RAW_CHUNKS
+#define RAW_CHUNKS
 #define CHUNK_SIZE 1024
 /// #define DEBUG_PRINT
 
@@ -37,9 +37,9 @@ sf::Texture texture;
 #ifdef _WIN32
 BOOL LoadNpcapDlls()
 {
-    WCHAR npcap_dir[512];
+    WCHAR npcap_dir[MAX_PATH];
     UINT len;
-    len = GetSystemDirectory(npcap_dir, 480);
+    len = GetCurrentDirectory(MAX_PATH, npcap_dir);
     if (!len) {
         fprintf(stderr, "Error in GetSystemDirectory: %x", GetLastError());
         return FALSE;
@@ -257,6 +257,8 @@ void packet_handler(u_char * param, const struct pcap_pkthdr* header, const u_ch
 			uint16_t* header = (uint16_t*)((uint64_t)pkt_data);
 			auto idx = (*header) * (CHUNK_SIZE / 2) * 4; /// If the chunk index is encoded in the first texel
 
+			// if (*(header+1) != 0xb007u) return;
+
 #if 0
 			static uint16_t chunk_index = 0;
 			idx = chunk_index * (CHUNK_SIZE / 2) * 4; /// Till then, like this
@@ -289,7 +291,12 @@ void packet_handler(u_char * param, const struct pcap_pkthdr* header, const u_ch
 				texels[idx++] = texels[idx++] = texels[idx++] = final;
 				texels[idx++] = 255;
 			}
-			texture.update(texels);
+
+			static uint16_t updt = 0;
+			if (updt++ % 60 == 0)
+			{
+				texture.update(texels);
+			}
 
 #ifdef RAW_CHUNKS
 			uint8_t* bptr = (uint8_t*)pkt_data;

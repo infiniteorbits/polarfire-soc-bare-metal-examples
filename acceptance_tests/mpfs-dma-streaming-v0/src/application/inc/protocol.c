@@ -1,9 +1,14 @@
-/*
- * protocol.c
- *
- *  Created on: 29 Oct 2025
- *      Author: TRAJCE Nikolov
- */
+///
+/// File            | protocol.c
+/// Description     | Simple protocol for streaming images from aqusition
+///                 | into chunks over ethernet
+///
+/// Author          | Trajce Nikolov    | trajce.nikolov.nick@gmail.com
+///                                     | trajce.nikolov.nick@outlook.com
+/// Date            | October 2025
+///
+/// Copyright 2025  | RFIM Space
+///
 
 #ifdef __cplusplus
 extern "C" {

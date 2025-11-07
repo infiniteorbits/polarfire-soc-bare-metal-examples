@@ -53,7 +53,7 @@ __attribute__((weak)) uint32_t num_cache_ways(void)
 //   static_assert(LIBERO_SETTING_WAY_ENABLE >
 //                 LIBERO_SETTING_NUM_SCRATCH_PAD_WAYS,
 //                 "Invalid way configuration");
-   return (uint64_t)((LIBERO_SETTING_WAY_ENABLE + 1U) -
+   return (uint32_t)((LIBERO_SETTING_WAY_ENABLE + 1U) -
                      LIBERO_SETTING_NUM_SCRATCH_PAD_WAYS);
 }
 
@@ -177,7 +177,7 @@ __attribute__((weak)) void config_l2_cache(void)
      */
     uint64_t * p_scratchpad = (uint64_t *)ZERO_DEVICE_BOTTOM;
     uint32_t ways_inc;
-    uint64_t current_way = 0x1U << (((LIBERO_SETTING_WAY_ENABLE + 1U) - LIBERO_SETTING_NUM_SCRATCH_PAD_WAYS) );
+    uint64_t current_way = 0x1UL << (((LIBERO_SETTING_WAY_ENABLE + 1UL) - LIBERO_SETTING_NUM_SCRATCH_PAD_WAYS) );
 
     for(ways_inc = 0; ways_inc < LIBERO_SETTING_NUM_SCRATCH_PAD_WAYS; ++ways_inc)
     {

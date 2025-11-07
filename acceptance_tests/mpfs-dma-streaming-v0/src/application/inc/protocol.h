@@ -1,9 +1,14 @@
-/*
- * protocol.h
- *
- *  Created on: 29 Oct 2025
- *      Author: TRAJCE Nikolov
- */
+///
+/// File            | protocol.h
+/// Description     | Simple protocol for streaming images from aqusition
+///                 | into chunks over ethernet
+///
+/// Author          | Trajce Nikolov    | trajce.nikolov.nick@gmail.com
+///                                     | trajce.nikolov.nick@outlook.com
+/// Date            | October  2025
+///
+/// Copyright 2025  | RFIM Space
+///
 
 #ifndef APPLICATION_INC_PROTOCOL_H_
 #define APPLICATION_INC_PROTOCOL_H_

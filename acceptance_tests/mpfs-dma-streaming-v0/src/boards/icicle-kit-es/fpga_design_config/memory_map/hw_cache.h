@@ -421,8 +421,8 @@ all masters, so they can not evict the way. */
 /*Number of ways reserved for scratchpad. Note 1: This is not a register Note
 2: each way is 128KB. Note 3: Embedded software expects cache ways allocated
 for scratchpad start at way 0, and work up. */
-#define LIBERO_SETTING_NUM_SCRATCH_PAD_WAYS    0x00000004UL
-    /* NUM_OF_WAYS                       [0:8]   RW value= 0x4 */
+#define LIBERO_SETTING_NUM_SCRATCH_PAD_WAYS    0x00000000UL
+    /* NUM_OF_WAYS                       [0:8]   RW value= 0x0 */
 #endif
 
 #ifdef __cplusplus
