@@ -101,10 +101,11 @@ typedef enum
     BLOCK_TRANSFER_COMPLETE,
     TRANSFER_ERROR
 } transfer_status_t;
+
 static volatile transfer_status_t   g_stream_status = STREAM_INCOMPLETE;
-extern volatile struct cond_var_t   g_cond_var_hart0;
-extern volatile struct cond_var_t   g_cond_var_hart1;
-volatile struct cond_var_t          g_cond_var_sync;
+extern struct cond_var_t            g_cond_var_hart0;
+extern struct cond_var_t            g_cond_var_hart1;
+struct cond_var_t                   g_cond_var_sync;
 axi4dma_stream_desc_t*              g_tdest0_stream_descriptor;
 uint64_t                            g_frame_addr;
 
@@ -387,6 +388,7 @@ void u54_1(void)
     ///
     while (STREAM_INCOMPLETE == g_stream_status)
     {
+        asm volatile ("nop");
     }
 
     /// Exposure

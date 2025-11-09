@@ -24,11 +24,7 @@ void set_packet_data(struct packet_t* pckt, uint16_t w, uint16_t h, uint8_t* dat
     pckt->length += data_size; /// Assumes calling init_packet in advance
     pckt->buffer_size = data_size;
 
-    memcpy(pckt->buffer, (uint8_t*)data, CHUNK_SIZE);
-}
-
-void protocol_clear(void)
-{
+    memcpy(pckt->buffer, data, data_size);
 }
 
 #ifdef __cplusplus

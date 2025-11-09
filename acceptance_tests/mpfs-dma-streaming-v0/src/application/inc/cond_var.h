@@ -17,32 +17,39 @@
 #define false   0
 #define TIMEOUT 10000000u
 
-// Structure to represent a condition variable
-struct cond_var_t{
+/// Structure to represent a condition variable
+///
+struct cond_var_t
+{
     volatile int64_t timeout;
     volatile bool signaled;
 } ;
 
-extern volatile struct cond_var_t g_cond_var;
-
-// Initialize a condition variable
-inline void cond_var_init(volatile struct cond_var_t* cv) {
+/// Initialize a condition variable
+///
+inline void cond_var_init(struct cond_var_t* cv)
+{
     cv->timeout = TIMEOUT;
     cv->signaled = false;
 }
 
-// Signal a condition variable
-inline void cond_var_signal(volatile struct cond_var_t* cv) {
+/// Signal a condition variable
+///
+inline void cond_var_signal(struct cond_var_t* cv)
+{
     cv->signaled = true;
 }
 
-// Wait on a condition variable
-inline void cond_var_wait(volatile struct cond_var_t* cv) {
-    while (!cv->signaled && cv->timeout-- > 0u) {
-
+/// Wait on a condition variable
+///
+inline void cond_var_wait(struct cond_var_t* cv)
+{
+    while (!cv->signaled && cv->timeout-- > 0u)
+    {
+        asm volatile ("nop");
     }
     cv->signaled = false;
     cv->timeout = TIMEOUT;
 }
 
-#endif /* APPLICATION_INC_COND_VAR_H_ */
+#endif ///

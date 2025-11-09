@@ -36,8 +36,8 @@ extern volatile uint64_t            DDR_data_addr;
 extern mss_uart_instance_t*         g_uart;
 extern mss_mac_instance_t*          g_test_mac;
 extern mss_mac_cfg_t                g_mac_config;
-volatile struct cond_var_t          g_cond_var_hart0;
-volatile struct cond_var_t          g_cond_var_hart1;
+struct cond_var_t                   g_cond_var_hart0;
+struct cond_var_t                   g_cond_var_hart1;
 
 uint16_t
 htons(uint16_t hostshort)
@@ -200,8 +200,6 @@ test_dma_streaming(void)
 
         /// if (++frame_cnt > 20) break;
     }
-
-    protocol_clear();
 
     test_display_finished();
 

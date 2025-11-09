@@ -35,7 +35,7 @@ struct packet_t
     uint32_t    chunk;
     uint32_t    num_chunks;
     uint32_t    buffer_size;
-    uint8_t     buffer[1048] __attribute__ ((aligned (4)));;
+    uint8_t     buffer[CHUNK_SIZE + 24] __attribute__ ((aligned (4)));;
 };
 
 struct eth_frame_t
@@ -63,11 +63,6 @@ inline void init_packet(struct packet_t* pckt)
 /// Call init_packet before
 ///
 extern void set_packet_data(struct packet_t* pckt, uint16_t w, uint16_t h, uint8_t* data, uint32_t data_size);
-
-/// Release zstd resources
-///
-
-extern void protocol_clear(void);
 
 #ifdef __cplusplus
 }
