@@ -10,8 +10,11 @@
 
 #include "mpfs_hal/mss_hal.h"
 #include "inc/common.h"
+#include "drivers/mss/mss_mmuart/mss_uart.h"
 
 volatile uint32_t count_sw_ints_h0 = 0U;
+
+mss_uart_instance_t *g_uart= &g_mss_uart0_lo;
 
 /* Main function for the hart0(E51 processor).
  * Application code running on hart1 is placed here

@@ -14,7 +14,6 @@
 
 volatile uint32_t count_sw_ints_h2 = 0U;
 
-extern mss_uart_instance_t *g_uart;
 
 /* Main function for the hart2(U54_2 processor).
  * Application code running on hart2 is placed here

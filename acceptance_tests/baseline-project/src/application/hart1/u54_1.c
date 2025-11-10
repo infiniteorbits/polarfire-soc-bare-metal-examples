@@ -14,15 +14,13 @@
 
 volatile uint32_t count_sw_ints_h1 = 0U;
 
-extern mss_uart_instance_t *g_uart;
-
 /* Main function for the hart1(U54_1 processor).
  * Application code running on hart1 is placed here
  *
  * The hart1 goes into WFI. hart0 brings it out of WFI when it raises the first
  * Software interrupt to this hart
  */
-void u54_2(void)
+void u54_1(void)
 {
     char info_string[100];
     volatile uint32_t icount = 0U;

@@ -14,7 +14,6 @@
 
 volatile uint32_t count_sw_ints_h3 = 0U;
 
-extern mss_uart_instance_t *g_uart;
 
 /* Main function for the hart3(U54_3 processor).
  * Application code running on hart3 is placed here

@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include "drivers/mss/mss_mmuart/mss_uart.h"
 
+extern mss_uart_instance_t *g_uart;
+
 typedef enum COMMAND_TYPE_
 {
     CLEAR_COMMANDS                  = 0x00,       /*!< 0 default behavior */

@@ -14,7 +14,6 @@
 
 volatile uint32_t count_sw_ints_h4 = 0U;
 
-extern mss_uart_instance_t *g_uart;
 
 /* Main function for the hart4(U54_4 processor).
  * Application code running on hart4 is placed here
