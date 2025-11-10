@@ -30,7 +30,7 @@
 #define  LIBERO_SETTING_MSS_CONFIGURATOR_VERSION                    "2025.1"
 #define  LIBERO_SETTING_DESIGN_NAME                                 "OrbSight_2"
 #define  LIBERO_SETTING_MPFS_PART                                   "MPFS160T"
-#define  LIBERO_SETTING_GENERATION_DATE                             "09-07-2025_22:18:22"
+#define  LIBERO_SETTING_GENERATION_DATE                             "10-08-2025_17:02:50"
 #define  LIBERO_SETTING_XML_VERSION                                 "0.6.8"
 #define  LIBERO_SETTING_XML_VERSION_MAJOR                           0
 #define  LIBERO_SETTING_XML_VERSION_MINOR                           6

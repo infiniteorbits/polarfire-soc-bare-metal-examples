@@ -4,7 +4,7 @@
       <design_name>OrbSight_2</design_name>
       <mpfs_part_no>MPFS160T</mpfs_part_no>
       <mpfs_package>FCVG784</mpfs_package>
-      <creation_date_time>09-07-2025_22:18:22</creation_date_time>
+      <creation_date_time>10-08-2025_17:02:50</creation_date_time>
       <xml_format_version>0.6.8</xml_format_version>
     </design_information>
     <mss_memory_map>
@@ -145,7 +145,7 @@
       <cache>
         <registers>
           <register address="0x00000008" description="Way indexes less than or equal to this register value  may be used by the cache. E.g. set to 0x7, will allocate 8 cache ways, 0-7 to cache, and leave 8-15 as LIM. Note 1: Way 0 is always allocated as cache. Note 2: each way is 128KB." name="WAY_ENABLE">
-            <field Type="RW" name="WAY_ENABLE" offset="0" width="8">0x0</field>
+            <field Type="RW" name="WAY_ENABLE" offset="0" width="8">0x7</field>
           </register>
           <register address="0x00000008" description="Way mask register master DMA. Set field to zero to disable way from this master. The available cache ways are 0 to number set in WAY_ENABLE register. If using scratch pad memory, the ways you want reserved for scrathpad are not available for selection, you must set to 0.  e.g. If three ways reserved for scratchpad, WAY_MASK_0, WAY_MASK_1 and WAY_MASK_2 will be set to zero for all masters, so they can not evict the way. " name="WAY_MASK_DMA">
             <field Type="RW" name="WAY_MASK_0" offset="0" width="1">0x1</field>
@@ -418,7 +418,7 @@
             <field Type="RW" name="WAY_MASK_15" offset="15" width="1">0x0</field>
           </register>
           <register address="0x00000136" description="Number of  ways reserved for scratchpad. Note 1: This is not a register Note 2: each way is 128KB. Note 3: Embedded software expects cache ways allocated for scratchpad start at way 0, and work up." name="NUM_SCRATCH_PAD_WAYS">
-            <field Type="RW" name="NUM_OF_WAYS" offset="0" width="8">0x0</field>
+            <field Type="RW" name="NUM_OF_WAYS" offset="0" width="8">0x4</field>
           </register>
         </registers>
       </cache>
@@ -2269,12 +2269,12 @@
             <field Type="RW" name="MSS_DDR_DM3" offset="10" width="1">0x1</field>
           </register>
           <register address="0x00000064" description="Overrides the I/O, used to disable specific DDR I/0. Each bit corresponding to an IO in corresponding IOG lane, starting from p_pair0 to n_pair5." name="RPC_EN_ECC_OVRT16">
-            <field Type="RW" name="MSS_DDR_DQ32" offset="0" width="1">0x1</field>
-            <field Type="RW" name="MSS_DDR_DQ33" offset="1" width="1">0x1</field>
-            <field Type="RW" name="MSS_DDR_DQ34" offset="2" width="1">0x1</field>
-            <field Type="RW" name="MSS_DDR_DQ35" offset="3" width="1">0x1</field>
-            <field Type="RW" name="MSS_DDR_DQS_P4" offset="4" width="1">0x1</field>
-            <field Type="RW" name="MSS_DDR_DQS_N4" offset="5" width="1">0x1</field>
+            <field Type="RW" name="MSS_DDR_DQ32" offset="0" width="1">0x0</field>
+            <field Type="RW" name="MSS_DDR_DQ33" offset="1" width="1">0x0</field>
+            <field Type="RW" name="MSS_DDR_DQ34" offset="2" width="1">0x0</field>
+            <field Type="RW" name="MSS_DDR_DQ35" offset="3" width="1">0x0</field>
+            <field Type="RW" name="MSS_DDR_DQS_P4" offset="4" width="1">0x0</field>
+            <field Type="RW" name="MSS_DDR_DQS_N4" offset="5" width="1">0x0</field>
             <field Type="RW" name="MSS_DDR_DM4" offset="6" width="1">0x1</field>
           </register>
           <register address="0x00000064" description="Sets pull-downs when override enabled. Each bit corresponding to an IO in corresponding IOG lane, starting from p_pair0 to n_pair5." name="RPC235_WPD_ADD_CMD0">
@@ -2492,7 +2492,7 @@
         <registers>
           <register address="0x00000004" description="DDRPHY MODE (binary)- 000 ddr3, 001 ddr33L, 010 ddr4, 011 LPDDR3, 100 LPDDR4, 111 OFF_MODE" name="DDRPHY_MODE">
             <field Type="RW" name="DDRMODE" offset="0" width="3">0x2</field>
-            <field Type="RW" name="ECC" offset="3" width="1">0x0</field>
+            <field Type="RW" name="ECC" offset="3" width="1">0x1</field>
             <field Type="RW" name="CRC" offset="4" width="1">0x0</field>
             <field Type="RW" name="BUS_WIDTH" offset="5" width="3">0x1</field>
             <field Type="RW" name="DMI_DBI" offset="8" width="1">0x0</field>
@@ -2509,7 +2509,7 @@
             <field Type="RSVD" name="RESERVED" offset="27" width="5">0x0</field>
           </register>
           <register address="0x00000008" description="number of lanes used for data-  does not include ECC, infer from mode register" name="DATA_LANES_USED">
-            <field Type="RW" name="DATA_LANES" offset="0" width="3">0x4</field>
+            <field Type="RW" name="DATA_LANES" offset="0" width="3">0x5</field>
           </register>
         </registers>
       </mode>
@@ -3520,7 +3520,7 @@
             <field Type="RW" name="CFG_RMW_EN" offset="0" width="32">0x1</field>
           </register>
           <register address="0x00005800" description="IP Blk = ECC Access=RW " name="CFG_ECC_CORRECTION_EN">
-            <field Type="RW" name="CFG_ECC_CORRECTION_EN" offset="0" width="32">0x0</field>
+            <field Type="RW" name="CFG_ECC_CORRECTION_EN" offset="0" width="32">0x1</field>
           </register>
           <register address="0x00005840" description="IP Blk = ECC Access=RW " name="CFG_ECC_BYPASS">
             <field Type="RW" name="CFG_ECC_BYPASS" offset="0" width="32">0x00000000</field>

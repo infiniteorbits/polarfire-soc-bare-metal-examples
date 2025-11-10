@@ -35,9 +35,9 @@ extern  "C" {
 #if !defined (LIBERO_SETTING_DDRPHY_MODE)
 /*DDRPHY MODE (binary)- 000 ddr3, 001 ddr33L, 010 ddr4, 011 LPDDR3, 100 LPDDR4,
 111 OFF_MODE */
-#define LIBERO_SETTING_DDRPHY_MODE    0x00000022UL
+#define LIBERO_SETTING_DDRPHY_MODE    0x0000002AUL
     /* DDRMODE                           [0:3]   RW value= 0x2 */
-    /* ECC                               [3:1]   RW value= 0x0 */
+    /* ECC                               [3:1]   RW value= 0x1 */
     /* CRC                               [4:1]   RW value= 0x0 */
     /* BUS_WIDTH                         [5:3]   RW value= 0x1 */
     /* DMI_DBI                           [8:1]   RW value= 0x0 */
@@ -56,8 +56,8 @@ extern  "C" {
 #if !defined (LIBERO_SETTING_DATA_LANES_USED)
 /*number of lanes used for data- does not include ECC, infer from mode register
 */
-#define LIBERO_SETTING_DATA_LANES_USED    0x00000004UL
-    /* DATA_LANES                        [0:3]   RW value= 0x4 */
+#define LIBERO_SETTING_DATA_LANES_USED    0x00000005UL
+    /* DATA_LANES                        [0:3]   RW value= 0x5 */
 #endif
 
 #ifdef __cplusplus

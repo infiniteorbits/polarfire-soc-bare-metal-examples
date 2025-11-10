@@ -237,13 +237,13 @@ to an IO in corresponding IOG lane, starting from p_pair0 to n_pair5. */
 #if !defined (LIBERO_SETTING_RPC_EN_ECC_OVRT16)
 /*Overrides the I/O, used to disable specific DDR I/0. Each bit corresponding
 to an IO in corresponding IOG lane, starting from p_pair0 to n_pair5. */
-#define LIBERO_SETTING_RPC_EN_ECC_OVRT16    0x0000007FUL
-    /* MSS_DDR_DQ32                      [0:1]   RW value= 0x1 */
-    /* MSS_DDR_DQ33                      [1:1]   RW value= 0x1 */
-    /* MSS_DDR_DQ34                      [2:1]   RW value= 0x1 */
-    /* MSS_DDR_DQ35                      [3:1]   RW value= 0x1 */
-    /* MSS_DDR_DQS_P4                    [4:1]   RW value= 0x1 */
-    /* MSS_DDR_DQS_N4                    [5:1]   RW value= 0x1 */
+#define LIBERO_SETTING_RPC_EN_ECC_OVRT16    0x00000040UL
+    /* MSS_DDR_DQ32                      [0:1]   RW value= 0x0 */
+    /* MSS_DDR_DQ33                      [1:1]   RW value= 0x0 */
+    /* MSS_DDR_DQ34                      [2:1]   RW value= 0x0 */
+    /* MSS_DDR_DQ35                      [3:1]   RW value= 0x0 */
+    /* MSS_DDR_DQS_P4                    [4:1]   RW value= 0x0 */
+    /* MSS_DDR_DQS_N4                    [5:1]   RW value= 0x0 */
     /* MSS_DDR_DM4                       [6:1]   RW value= 0x1 */
 #endif
 #if !defined (LIBERO_SETTING_RPC235_WPD_ADD_CMD0)
