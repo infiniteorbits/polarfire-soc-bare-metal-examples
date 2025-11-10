@@ -80,7 +80,7 @@ test_dma_streaming(void)
 
     /// Set up the destination MAC address
     ///
-    unsigned char dst_mac[] = {0xCC, 0x96, 0xE5, 0x15, 0x03, 0x9C};
+    unsigned char dst_mac[] = {0x00, 0x11, 0x22, 0x68, 0x46, 0xb7};
     memcpy(frame.dst_mac, dst_mac, 6);
 
     /// Set up the source MAC address

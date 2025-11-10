@@ -24,7 +24,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "mpfs_hal/mss_hal.h"
-#include "fpga_design_config.h"
+#include "../boards/icicle-kit-es/fpga_design_config/fpga_design_config.h"
 #include "mss_nwc_init.h"
 #ifdef DDR_SUPPORT
 #include "mss_ddr_debug.h"
@@ -4895,7 +4895,7 @@ static uint8_t ddr_manual_addcmd_refclk_offset(DDR_TYPE ddr_type, uint8_t * refc
 
     *refclk_sweep_index = (uint8_t)(*refclk_sweep_index + 1U);
 
-    return refclk_offset;
+    return 0;
 }
 #endif
 
