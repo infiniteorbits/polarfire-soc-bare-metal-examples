@@ -34,15 +34,15 @@ extern  "C" {
 
 #if !defined (LIBERO_SETTING_SGMII_MODE)
 /*SGMII mode control (SEU) */
-#define LIBERO_SETTING_SGMII_MODE    0x08C0F2FFUL
-    /* REG_PLL_EN                        [0:1]   RW value= 0x1 */
-    /* REG_DLL_EN                        [1:1]   RW value= 0x1 */
+#define LIBERO_SETTING_SGMII_MODE    0x08C0F20CUL
+    /* REG_PLL_EN                        [0:1]   RW value= 0x0 */
+    /* REG_DLL_EN                        [1:1]   RW value= 0x0 */
     /* REG_PVT_EN                        [2:1]   RW value= 0x1 */
     /* REG_BC_VRGEN_EN                   [3:1]   RW value= 0x1 */
-    /* REG_TX0_EN                        [4:1]   RW value= 0x1 */
-    /* REG_RX0_EN                        [5:1]   RW value= 0x1 */
-    /* REG_TX1_EN                        [6:1]   RW value= 0x1 */
-    /* REG_RX1_EN                        [7:1]   RW value= 0x1 */
+    /* REG_TX0_EN                        [4:1]   RW value= 0x0 */
+    /* REG_RX0_EN                        [5:1]   RW value= 0x0 */
+    /* REG_TX1_EN                        [6:1]   RW value= 0x0 */
+    /* REG_RX1_EN                        [7:1]   RW value= 0x0 */
     /* REG_DLL_LOCK_FLT                  [8:2]   RW value= 0x2 */
     /* REG_DLL_ADJ_CODE                  [10:4]  RW value= 0xC */
     /* REG_CH0_CDR_RESET_B               [14:1]  RW value= 0x1 */
@@ -59,49 +59,49 @@ extern  "C" {
 #if !defined (LIBERO_SETTING_PLL_CNTL)
 /*PLL control register (SEU) */
 #define LIBERO_SETTING_PLL_CNTL    0x80140101UL
-    /* REG_PLL_POSTDIV                   [0:7]   RW value= 0x1 */
+    /* REG_PLL_POSTDIV                   [0:7]   RW value= 0x01 */
     /* ARO_PLL0_LOCK                     [7:1]   RO */
-    /* REG_PLL_RFDIV                     [8:6]   RW value= 0x1 */
+    /* REG_PLL_RFDIV                     [8:6]   RW value= 0x01 */
     /* REG_PLL_REG_RFCLK_SEL             [14:1]  RW value= 0x0 */
     /* REG_PLL_LP_REQUIRES_LOCK          [15:1]  RW value= 0x0 */
-    /* REG_PLL_INTIN                     [16:12] RW value= 0x14 */
+    /* REG_PLL_INTIN                     [16:12] RW value= 0x014 */
     /* REG_PLL_BWI                       [28:2]  RW value= 0x0 */
     /* REG_PLL_BWP                       [30:2]  RW value= 0x2 */
 #endif
 #if !defined (LIBERO_SETTING_CH0_CNTL)
 /*Channel0 control register */
-#define LIBERO_SETTING_CH0_CNTL    0x37F07770UL
+#define LIBERO_SETTING_CH0_CNTL    0x00FE0002UL
     /* REG_TX0_WPU_P                     [0:1]   RW value= 0x0 */
-    /* REG_TX0_WPD_P                     [1:1]   RW value= 0x0 */
+    /* REG_TX0_WPD_P                     [1:1]   RW value= 0x1 */
     /* REG_TX0_SLEW_P                    [2:2]   RW value= 0x0 */
-    /* REG_TX0_DRV_P                     [4:4]   RW value= 0x7 */
-    /* REG_TX0_ODT_P                     [8:4]   RW value= 0x7 */
-    /* REG_TX0_ODT_STATIC_P              [12:3]  RW value= 0x7 */
+    /* REG_TX0_DRV_P                     [4:4]   RW value= 0x0 */
+    /* REG_TX0_ODT_P                     [8:4]   RW value= 0x0 */
+    /* REG_TX0_ODT_STATIC_P              [12:3]  RW value= 0x0 */
     /* REG_RX0_TIM_LONG                  [15:1]  RW value= 0x0 */
     /* REG_RX0_WPU_P                     [16:1]  RW value= 0x0 */
-    /* REG_RX0_WPD_P                     [17:1]  RW value= 0x0 */
-    /* REG_RX0_IBUFMD_P                  [18:3]  RW value= 0x4 */
+    /* REG_RX0_WPD_P                     [17:1]  RW value= 0x1 */
+    /* REG_RX0_IBUFMD_P                  [18:3]  RW value= 0x7 */
     /* REG_RX0_EYEWIDTH_P                [21:3]  RW value= 0x7 */
-    /* REG_RX0_ODT_P                     [24:4]  RW value= 0x7 */
-    /* REG_RX0_ODT_STATIC_P              [28:3]  RW value= 0x3 */
+    /* REG_RX0_ODT_P                     [24:4]  RW value= 0x0 */
+    /* REG_RX0_ODT_STATIC_P              [28:3]  RW value= 0x0 */
     /* REG_RX0_EN_FLAG_N                 [31:1]  RW value= 0x0 */
 #endif
 #if !defined (LIBERO_SETTING_CH1_CNTL)
 /*Channel1 control register */
-#define LIBERO_SETTING_CH1_CNTL    0x37F07770UL
+#define LIBERO_SETTING_CH1_CNTL    0x00FE0002UL
     /* REG_TX1_WPU_P                     [0:1]   RW value= 0x0 */
-    /* REG_TX1_WPD_P                     [1:1]   RW value= 0x0 */
+    /* REG_TX1_WPD_P                     [1:1]   RW value= 0x1 */
     /* REG_TX1_SLEW_P                    [2:2]   RW value= 0x0 */
-    /* REG_TX1_DRV_P                     [4:4]   RW value= 0x7 */
-    /* REG_TX1_ODT_P                     [8:4]   RW value= 0x7 */
-    /* REG_TX1_ODT_STATIC_P              [12:3]  RW value= 0x7 */
+    /* REG_TX1_DRV_P                     [4:4]   RW value= 0x0 */
+    /* REG_TX1_ODT_P                     [8:4]   RW value= 0x0 */
+    /* REG_TX1_ODT_STATIC_P              [12:3]  RW value= 0x0 */
     /* REG_RX1_TIM_LONG                  [15:1]  RW value= 0x0 */
     /* REG_RX1_WPU_P                     [16:1]  RW value= 0x0 */
-    /* REG_RX1_WPD_P                     [17:1]  RW value= 0x0 */
-    /* REG_RX1_IBUFMD_P                  [18:3]  RW value= 0x4 */
+    /* REG_RX1_WPD_P                     [17:1]  RW value= 0x1 */
+    /* REG_RX1_IBUFMD_P                  [18:3]  RW value= 0x7 */
     /* REG_RX1_EYEWIDTH_P                [21:3]  RW value= 0x7 */
-    /* REG_RX1_ODT_P                     [24:4]  RW value= 0x7 */
-    /* REG_RX1_ODT_STATIC_P              [28:3]  RW value= 0x3 */
+    /* REG_RX1_ODT_P                     [24:4]  RW value= 0x0 */
+    /* REG_RX1_ODT_STATIC_P              [28:3]  RW value= 0x0 */
     /* REG_RX1_EN_FLAG_N                 [31:1]  RW value= 0x0 */
 #endif
 #if !defined (LIBERO_SETTING_RECAL_CNTL)
@@ -124,20 +124,20 @@ extern  "C" {
 #endif
 #if !defined (LIBERO_SETTING_CLK_CNTL)
 /*Clock input and routing control registers */
-#define LIBERO_SETTING_CLK_CNTL    0xF00050CCUL
+#define LIBERO_SETTING_CLK_CNTL    0xF000F0CCUL
     /* REG_REFCLK_EN_TERM_P              [0:2]   RW value= 0x0 */
     /* REG_REFCLK_EN_RXMODE_P            [2:2]   RW value= 0x3 */
     /* REG_REFCLK_EN_TERM_N              [4:2]   RW value= 0x0 */
     /* REG_REFCLK_EN_RXMODE_N            [6:2]   RW value= 0x3 */
     /* REG_REFCLK_CLKBUF_EN_PULLUP       [8:1]   RW value= 0x0 */
     /* REG_CLKMUX_FCLK_SEL               [9:3]   RW value= 0x0 */
-    /* REG_CLKMUX_PLL0_RFCLK0_SEL        [12:2]  RW value= 0x1 */
-    /* REG_CLKMUX_PLL0_RFCLK1_SEL        [14:2]  RW value= 0x1 */
+    /* REG_CLKMUX_PLL0_RFCLK0_SEL        [12:2]  RW value= 0x3 */
+    /* REG_CLKMUX_PLL0_RFCLK1_SEL        [14:2]  RW value= 0x3 */
     /* REG_CLKMUX_SPARE0                 [16:16] RW value= 0xf000 */
 #endif
 #if !defined (LIBERO_SETTING_DYN_CNTL)
 /*Dynamic control registers */
-#define LIBERO_SETTING_DYN_CNTL    0x00000000UL
+#define LIBERO_SETTING_DYN_CNTL    0x00000400UL
     /* REG_PLL_DYNEN                     [0:1]   RW value= 0x0 */
     /* REG_DLL_DYNEN                     [1:1]   RW value= 0x0 */
     /* REG_PVT_DYNEN                     [2:1]   RW value= 0x0 */
@@ -148,7 +148,7 @@ extern  "C" {
     /* BC_VRGEN_OOR                      [7:1]   RO */
     /* REG_PLL_SOFT_RESET_PERIPH         [8:1]   RW value= 0x0 */
     /* REG_DLL_SOFT_RESET_PERIPH         [9:1]   RW value= 0x0 */
-    /* REG_PVT_SOFT_RESET_PERIPH         [10:1]  RW value= 0x0 */
+    /* REG_PVT_SOFT_RESET_PERIPH         [10:1]  RW value= 0x1 */
     /* REG_BC_SOFT_RESET_PERIPH          [11:1]  RW value= 0x0 */
     /* REG_CLKMUX_SOFT_RESET_PERIPH      [12:1]  RW value= 0x0 */
     /* REG_LANE0_SOFT_RESET_PERIPH       [13:1]  RW value= 0x0 */
@@ -179,7 +179,7 @@ extern  "C" {
 #if !defined (LIBERO_SETTING_SPARE_CNTL)
 /*Spare control register */
 #define LIBERO_SETTING_SPARE_CNTL    0xFF000000UL
-    /* REG_SPARE                         [0:32]  RW value= 0xFF000000 */
+    /* REG_SPARE                         [0:32]  RW value= 0xff000000 */
 #endif
 #if !defined (LIBERO_SETTING_SPARE_STAT)
 /*Spare status register */

@@ -27,10 +27,10 @@
 #ifndef FPGA_DESIGN_CONFIG_H_
 #define FPGA_DESIGN_CONFIG_H_
 
-#define  LIBERO_SETTING_MSS_CONFIGURATOR_VERSION                    "2023.2"
-#define  LIBERO_SETTING_DESIGN_NAME                                 "ICICLE_MSS"
-#define  LIBERO_SETTING_MPFS_PART                                   "MPFS250T_ES"
-#define  LIBERO_SETTING_GENERATION_DATE                             "01-08-2024_11:10:03"
+#define  LIBERO_SETTING_MSS_CONFIGURATOR_VERSION                    "2025.1"
+#define  LIBERO_SETTING_DESIGN_NAME                                 "OrbSight_2"
+#define  LIBERO_SETTING_MPFS_PART                                   "MPFS160T"
+#define  LIBERO_SETTING_GENERATION_DATE                             "09-07-2025_22:18:22"
 #define  LIBERO_SETTING_XML_VERSION                                 "0.6.8"
 #define  LIBERO_SETTING_XML_VERSION_MAJOR                           0
 #define  LIBERO_SETTING_XML_VERSION_MINOR                           6

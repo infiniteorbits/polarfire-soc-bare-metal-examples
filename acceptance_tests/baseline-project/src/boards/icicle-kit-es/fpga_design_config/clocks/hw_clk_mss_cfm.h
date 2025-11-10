@@ -45,12 +45,12 @@ extern  "C" {
 #endif
 #if !defined (LIBERO_SETTING_MSS_PLL_CKMUX)
 /*Input mux selections */
-#define LIBERO_SETTING_MSS_PLL_CKMUX    0x00000155UL
-    /* CLK_IN_MAC_TSU_SEL                [0:2]   RW value= 0x1 */
-    /* PLL0_RFCLK0_SEL                   [2:2]   RW value= 0x1 */
-    /* PLL0_RFCLK1_SEL                   [4:2]   RW value= 0x1 */
-    /* PLL1_RFCLK0_SEL                   [6:2]   RW value= 0x1 */
-    /* PLL1_RFCLK1_SEL                   [8:2]   RW value= 0x1 */
+#define LIBERO_SETTING_MSS_PLL_CKMUX    0x000003FFUL
+    /* CLK_IN_MAC_TSU_SEL                [0:2]   RW value= 0x3 */
+    /* PLL0_RFCLK0_SEL                   [2:2]   RW value= 0x3 */
+    /* PLL0_RFCLK1_SEL                   [4:2]   RW value= 0x3 */
+    /* PLL1_RFCLK0_SEL                   [6:2]   RW value= 0x3 */
+    /* PLL1_RFCLK1_SEL                   [8:2]   RW value= 0x3 */
     /* PLL1_FDR_SEL                      [10:5]  RW value= 0x0 */
     /* RESERVED                          [15:17] RW value= 0x0 */
 #endif
