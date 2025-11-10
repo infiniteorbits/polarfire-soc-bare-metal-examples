@@ -25,6 +25,7 @@ void u54_4(void)
 {
     char info_string[100];
     volatile uint32_t icount = 0U;
+    volatile uint32_t stepcount = 0U;
     uint64_t hartid = read_csr(mhartid);
     uint32_t pattern_offset = 12U;
     HLS_DATA* hls = (HLS_DATA*)(uintptr_t)get_tp_reg();
@@ -58,10 +59,11 @@ void u54_4(void)
     {
         icount++;
 
-        if (0x100000U == icount)
+        if (0x1000000U == icount)
         {
             icount = 0U;
-            sprintf(info_string,"Hart %d\r\n", hartid);
+            stepcount++;
+            sprintf(info_string,"Hart %d, step %d\r\n\n", hartid, stepcount);
             spinlock(&hart_share->mutex_uart0);
             MSS_UART_polled_tx(&g_mss_uart0_lo, info_string, strlen(info_string));
             spinunlock(&hart_share->mutex_uart0);

@@ -35,16 +35,16 @@ extern  "C" {
 #if !defined (LIBERO_SETTING_DDRPHY_MODE)
 /*DDRPHY MODE (binary)- 000 ddr3, 001 ddr33L, 010 ddr4, 011 LPDDR3, 100 LPDDR4,
 111 OFF_MODE */
-#define LIBERO_SETTING_DDRPHY_MODE    0x0000002AUL
-    /* DDRMODE                           [0:3]   RW value= 0x2 */
-    /* ECC                               [3:1]   RW value= 0x1 */
+#define LIBERO_SETTING_DDRPHY_MODE    0x00014A24UL
+    /* DDRMODE                           [0:3]   RW value= 0x4 */
+    /* ECC                               [3:1]   RW value= 0x0 */
     /* CRC                               [4:1]   RW value= 0x0 */
     /* BUS_WIDTH                         [5:3]   RW value= 0x1 */
     /* DMI_DBI                           [8:1]   RW value= 0x0 */
-    /* DQ_DRIVE                          [9:2]   RW value= 0x0 */
-    /* DQS_DRIVE                         [11:2]  RW value= 0x0 */
-    /* ADD_CMD_DRIVE                     [13:2]  RW value= 0x0 */
-    /* CLOCK_OUT_DRIVE                   [15:2]  RW value= 0x0 */
+    /* DQ_DRIVE                          [9:2]   RW value= 0x1 */
+    /* DQS_DRIVE                         [11:2]  RW value= 0x1 */
+    /* ADD_CMD_DRIVE                     [13:2]  RW value= 0x2 */
+    /* CLOCK_OUT_DRIVE                   [15:2]  RW value= 0x2 */
     /* DQ_TERMINATION                    [17:2]  RW value= 0x0 */
     /* DQS_TERMINATION                   [19:2]  RW value= 0x0 */
     /* ADD_CMD_INPUT_PIN_TERMINATION     [21:2]  RW value= 0x0 */
@@ -56,8 +56,8 @@ extern  "C" {
 #if !defined (LIBERO_SETTING_DATA_LANES_USED)
 /*number of lanes used for data- does not include ECC, infer from mode register
 */
-#define LIBERO_SETTING_DATA_LANES_USED    0x00000005UL
-    /* DATA_LANES                        [0:3]   RW value= 0x5 */
+#define LIBERO_SETTING_DATA_LANES_USED    0x00000004UL
+    /* DATA_LANES                        [0:3]   RW value= 0x4 */
 #endif
 
 #ifdef __cplusplus

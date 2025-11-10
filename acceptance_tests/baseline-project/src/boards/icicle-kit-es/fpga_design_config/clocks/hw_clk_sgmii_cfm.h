@@ -34,9 +34,9 @@ extern  "C" {
 
 #if !defined (LIBERO_SETTING_SGMII_REFCLKMUX)
 /*Input mux selections */
-#define LIBERO_SETTING_SGMII_REFCLKMUX    0x0000000FUL
-    /* PLL0_RFCLK0_SEL                   [0:2]   RW value= 0x3 */
-    /* PLL0_RFCLK1_SEL                   [2:2]   RW value= 0x3 */
+#define LIBERO_SETTING_SGMII_REFCLKMUX    0x00000005UL
+    /* PLL0_RFCLK0_SEL                   [0:2]   RW value= 0x1 */
+    /* PLL0_RFCLK1_SEL                   [2:2]   RW value= 0x1 */
     /* RESERVED                          [4:28]  RW value= 0x0 */
 #endif
 #if !defined (LIBERO_SETTING_SGMII_SGMII_CLKMUX)

@@ -37,8 +37,8 @@ extern  "C" {
 cache. E.g. set to 0x7, will allocate 8 cache ways, 0-7 to cache, and leave
 8-15 as LIM. Note 1: Way 0 is always allocated as cache. Note 2: each way is
 128KB. */
-#define LIBERO_SETTING_WAY_ENABLE    0x00000007UL
-    /* WAY_ENABLE                        [0:8]   RW value= 0x7 */
+#define LIBERO_SETTING_WAY_ENABLE    0x0000000BUL
+    /* WAY_ENABLE                        [0:8]   RW value= 0xB */
 #endif
 #if !defined (LIBERO_SETTING_WAY_MASK_DMA)
 /*Way mask register master DMA. Set field to zero to disable way from this

@@ -14,6 +14,7 @@
 
 volatile uint32_t count_sw_ints_h1 = 0U;
 
+
 /* Main function for the hart1(U54_1 processor).
  * Application code running on hart1 is placed here
  *
@@ -24,6 +25,7 @@ void u54_1(void)
 {
     char info_string[100];
     volatile uint32_t icount = 0U;
+    volatile uint32_t stepcount = 0U;
     uint64_t hartid = read_csr(mhartid);
     uint32_t pattern_offset = 12U;
     HLS_DATA* hls = (HLS_DATA*)(uintptr_t)get_tp_reg();
@@ -47,7 +49,7 @@ void u54_1(void)
 
     __enable_irq();
 
-    sprintf(info_string, "\r\nHart %u, HLS mem address 0x%lx, Shared mem 0x%lx\r\n",\
+    sprintf(info_string, "\r\nHart %u, HLS mem address 0x%lx, Shared mem 0x%lx",\
                                                           hls->my_hart_id, (uint64_t)hls, (uint64_t)hls->shared_mem);
     spinlock(&hart_share->mutex_uart0);
     MSS_UART_polled_tx(g_uart, (const uint8_t*)info_string,(uint32_t)strlen(info_string));
@@ -57,12 +59,13 @@ void u54_1(void)
     {
         icount++;
 
-        if (0x100000U == icount)
+        if (0x1000000U == icount)
         {
             icount = 0U;
-            sprintf(info_string,"Hart %d\r\n", hartid);
+            stepcount++;
+            sprintf(info_string,"Hart %d, step %d\r\n", hartid, stepcount);
             spinlock(&hart_share->mutex_uart0);
-            MSS_UART_polled_tx(&g_mss_uart0_lo, info_string, strlen(info_string));
+            MSS_UART_polled_tx(g_uart, info_string, strlen(info_string));
             spinunlock(&hart_share->mutex_uart0);
         }
     }
