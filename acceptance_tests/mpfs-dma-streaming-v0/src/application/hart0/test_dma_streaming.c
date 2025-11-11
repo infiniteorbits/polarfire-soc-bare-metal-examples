@@ -1,9 +1,15 @@
-/*
- * test_dma_streaming.c
- *
- *  Created on: 30 Oct 2025
- *      Author: Trajce Nikolov
- */
+///
+/// File            | test_dma_streaming.c
+/// Description     | Streaming from AXI4DMA -> DDR -> Ethernet
+///
+/// Author          | Trajce Nikolov    | trajce.nikolov.nick@gmail.com
+///                                     | trajce.nikolov.nick@outlook.com
+/// Date            | October 2025
+///
+/// Copyright 2025  | RFIM Space
+///
+///
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -30,7 +36,8 @@ extern volatile uint64_t            DDR_data_addr;
 extern mss_uart_instance_t*         g_uart;
 extern mss_mac_instance_t*          g_test_mac;
 extern mss_mac_cfg_t                g_mac_config;
-volatile struct cond_var_t          g_cond_var;
+struct cond_var_t                   g_cond_var_hart0;
+struct cond_var_t                   g_cond_var_hart1;
 
 uint16_t
 htons(uint16_t hostshort)
@@ -73,7 +80,7 @@ test_dma_streaming(void)
 
     /// Set up the destination MAC address
     ///
-    unsigned char dst_mac[] = {0xCC, 0x96, 0xE5, 0x15, 0x03, 0x9C};
+    unsigned char dst_mac[] = {0x00, 0x11, 0x22, 0x68, 0x46, 0xb7};
     memcpy(frame.dst_mac, dst_mac, 6);
 
     /// Set up the source MAC address
@@ -96,17 +103,6 @@ test_dma_streaming(void)
     uint32_t chunks_size = CHUNK_SIZE;
     uint32_t packet_size = chunks_size;
 
-    for (uint16_t inner_count = 0; inner_count != (MSS_MAC_TX_RING_SIZE - 1); inner_count++)
-    {
-
-        tx_desc_tab[inner_count].addr_low = (uint32_t)((uint64_t)data) + inner_count * chunks_size;
-
-        /* Mark as last buffer for frame */
-        tx_desc_tab[inner_count].status =
-            (packet_size & GEM_TX_DMA_BUFF_LEN) | GEM_TX_DMA_LAST;
-
-        tx_desc_tab[inner_count + 1].status |= GEM_TX_DMA_WRAP | GEM_TX_DMA_USED;
-    }
 
     g_test_mac = &g_mac0;
     g_test_mac->mac_base->NETWORK_CONFIG |= GEM_JUMBO_FRAMES;
@@ -115,17 +111,64 @@ test_dma_streaming(void)
     volatile uint8_t*   chunk_ptr = (uint8_t*)data;
     struct packet_t*    pckt = (struct packet_t* )frame.payload;
 
+    uint16_t num_full_batches = num_chunks / (MSS_MAC_TX_RING_SIZE - 1);
 
     while (2U)
     {
-        cond_var_wait(&g_cond_var);
+        cond_var_wait(&g_cond_var_hart1);
 
 #ifdef MSS_MAC_SPEED_TEST
+        data = (uint32_t*)DDR_data_addr;
+        uint16_t curr_chunk = 0;
+        uint16_t* data_ptr = (uint16_t*)((uint64_t)(data));
+
+        for (uint16_t b = 0; b < num_full_batches; ++b)
+        {
+            for (volatile uint16_t i = 0; i != (MSS_MAC_TX_RING_SIZE - 1); i++)
+            {
+
+                *data_ptr = curr_chunk++;
+                /// *(data_ptr+1) = 0xb007u;
+
+                tx_desc_tab[i].addr_low = (uint32_t)(((uint64_t)data_ptr) & 0xFFFFFFFFu);
+                tx_desc_tab[i].addr_high = (uint32_t)((((uint64_t)data_ptr) >> 32)& 0xFFFFFFFFu);
+
+                data_ptr += chunks_size /2;
+
+                tx_desc_tab[i].status = (packet_size & GEM_TX_DMA_BUFF_LEN) | GEM_TX_DMA_LAST;
+                tx_desc_tab[i + 1].status |= GEM_TX_DMA_WRAP | GEM_TX_DMA_USED;
+            }
+
+            g_test_mac->queue[0].nb_available_tx_desc = (uint32_t)MSS_MAC_TX_RING_SIZE;
+            uint8_t tx_status = MSS_MAC_send_pkts_fast(g_test_mac,
+                                    tx_desc_tab,
+                                    (packet_size & 0xFFFF) *
+                                    (MSS_MAC_TX_RING_SIZE - 1));
+
+        }
+
+        uint16_t num_remaining_chunks = num_chunks - curr_chunk;
+        for (volatile uint16_t i = 0; i < num_remaining_chunks; i++)
+        {
+            *data_ptr = curr_chunk++;
+            /// *(data_ptr+1) = 0xb007u;
+
+            tx_desc_tab[i].addr_low = (uint32_t)(((uint64_t)data_ptr) & 0xFFFFFFFFu);
+            tx_desc_tab[i].addr_high = (uint32_t)((((uint64_t)data_ptr) >> 32)& 0xFFFFFFFFu);
+
+            data_ptr += chunks_size /2;
+
+            /// Mark as last buffer for frame
+            ///
+            tx_desc_tab[i].status = (packet_size & GEM_TX_DMA_BUFF_LEN) | GEM_TX_DMA_LAST;
+            tx_desc_tab[i + 1].status |= GEM_TX_DMA_WRAP | GEM_TX_DMA_USED;
+        }
         g_test_mac->queue[0].nb_available_tx_desc = (uint32_t)MSS_MAC_TX_RING_SIZE;
         uint8_t tx_status = MSS_MAC_send_pkts_fast(g_test_mac,
                                 tx_desc_tab,
                                 (packet_size & 0xFFFF) *
-                                (MSS_MAC_TX_RING_SIZE - 1));
+                                num_remaining_chunks);
+
 #else
         for (volatile uint32_t i = 0; i < num_chunks; ++i)
         {
@@ -143,7 +186,7 @@ test_dma_streaming(void)
                                  sizeof(frame) | 0x0 /*CRC*/,
                                  (void *)0);
 
-            sprintf((char*)msg," TX : %d, frame : %d, chunk : %d\r", (uint16_t)tx_status, frame_cnt, i);
+            sprintf((char*)msg," TX : %d, frame : %d, chunk : %d     \r", (uint16_t)tx_status, frame_cnt, i);
             PRINT_STRING(msg);
 
         }
@@ -152,13 +195,11 @@ test_dma_streaming(void)
         sprintf((char*)msg,"\n\r Frame sent : %d\n\r", frame_cnt++);
         PRINT_STRING(msg);
 
-        cond_var_signal(&g_cond_var);
-        sleep_ms(10000);
+        cond_var_signal(&g_cond_var_hart0);
+
 
         /// if (++frame_cnt > 20) break;
     }
-
-    protocol_clear();
 
     test_display_finished();
 

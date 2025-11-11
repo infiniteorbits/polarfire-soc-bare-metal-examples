@@ -37,8 +37,8 @@ extern  "C" {
 cache. E.g. set to 0x7, will allocate 8 cache ways, 0-7 to cache, and leave
 8-15 as LIM. Note 1: Way 0 is always allocated as cache. Note 2: each way is
 128KB. */
-#define LIBERO_SETTING_WAY_ENABLE    0x00000007UL
-    /* WAY_ENABLE                        [0:8]   RW value= 0x7 */
+#define LIBERO_SETTING_WAY_ENABLE    0x00000000UL
+    /* WAY_ENABLE                        [0:8]   RW value= 0x0 */
 #endif
 #if !defined (LIBERO_SETTING_WAY_MASK_DMA)
 /*Way mask register master DMA. Set field to zero to disable way from this
@@ -421,8 +421,8 @@ all masters, so they can not evict the way. */
 /*Number of ways reserved for scratchpad. Note 1: This is not a register Note
 2: each way is 128KB. Note 3: Embedded software expects cache ways allocated
 for scratchpad start at way 0, and work up. */
-#define LIBERO_SETTING_NUM_SCRATCH_PAD_WAYS    0x00000004UL
-    /* NUM_OF_WAYS                       [0:8]   RW value= 0x4 */
+#define LIBERO_SETTING_NUM_SCRATCH_PAD_WAYS    0x00000000UL
+    /* NUM_OF_WAYS                       [0:8]   RW value= 0x0 */
 #endif
 
 #ifdef __cplusplus

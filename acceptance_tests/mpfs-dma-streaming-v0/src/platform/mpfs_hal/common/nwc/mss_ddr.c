@@ -24,7 +24,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "mpfs_hal/mss_hal.h"
-#include "fpga_design_config.h"
+#include "../boards/icicle-kit-es/fpga_design_config/fpga_design_config.h"
 #include "mss_nwc_init.h"
 #ifdef DDR_SUPPORT
 #include "mss_ddr_debug.h"
@@ -3130,7 +3130,7 @@ static uint8_t \
                  * Check the result
                  */
 #ifdef DEBUG_DDR_INIT
-                (void)uprint32(g_debug_uart, "\n\rLane passed successful:",laneToTest);
+                (void)uprint32(g_debug_uart, "\n\rLane pass is successful:",laneToTest);
                 (void)uprint32(g_debug_uart, " All lanes status:",calib_data.write_cal.status_lower);
 #endif
                 uint32_t laneToCheck;
@@ -4894,7 +4894,9 @@ static uint8_t ddr_manual_addcmd_refclk_offset(DDR_TYPE ddr_type, uint8_t * refc
     refclk_offset = REFCLK_OFFSETS[type_array_index][*refclk_sweep_index + 1U];
 
     *refclk_sweep_index = (uint8_t)(*refclk_sweep_index + 1U);
-
+#if 1
+    refclk_offset = 0u;
+#endif
     return refclk_offset;
 }
 #endif

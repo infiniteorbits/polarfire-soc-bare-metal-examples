@@ -127,7 +127,8 @@
 									<listOptionValue builtIn="false" value="TARGET_ICICLE_KIT"/>
 									<listOptionValue builtIn="false" value="GEM1_MDIO_MSS"/>
 									<listOptionValue builtIn="false" value="ICICLE_KIT_ES"/>
-									<listOptionValue builtIn="false" value="MSS_MAC_USE_DDR=MSS_MAC_MEM_DDR"/>
+									<listOptionValue builtIn="false" value="MSS_MAC_64_BIT_ADDRESS_MODE"/>
+									<listOptionValue builtIn="false" value="MSS_MAC_SPEED_TEST"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnumcueclipse.managedbuild.cross.riscv.option.c.compiler.include.paths.1924169434" name="Include paths (-I)" superClass="ilg.gnumcueclipse.managedbuild.cross.riscv.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/middleware/vtss_api_lite_v1_02/include}&quot;"/>
@@ -1148,19 +1149,19 @@
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.1758100297;ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.1758100297.;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.190460338;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.input.1726880214">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.1758100297.462309201;ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.1758100297.462309201.;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.743805061;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.input.1371468273">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.1758100297.908399783;ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.1758100297.908399783.;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.1883193285;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.input.579844861">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.1758100297.290531066;ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.1758100297.290531066.;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.1824341923;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.input.2146393379">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.1758100297.1995464381;ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.1758100297.1995464381.;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.179612499;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.input.1379122194">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.1758100297.290531066;ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.1758100297.290531066.;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.1824341923;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.input.2146393379">
+		<scannerConfigBuildInfo instanceId="ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.1758100297;ilg.gnumcueclipse.managedbuild.cross.riscv.config.elf.debug.1758100297.;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.190460338;ilg.gnumcueclipse.managedbuild.cross.riscv.tool.c.compiler.input.1726880214">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>

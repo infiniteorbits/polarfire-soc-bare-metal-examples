@@ -4,10 +4,23 @@
  *
  * SPDX-License-Identifier: MIT
  *
- * Application code running on U54_2
+ * Application code running on U54_1
  *
  * PolarFire SoC MSS GPIO interrupt example project
  */
+
+///
+/// File            | u54_1.c
+/// Description     | Streaming from AXI4DMA -> DDR -> Ethernet
+///
+/// Author          | Trajce Nikolov    | trajce.nikolov.nick@gmail.com
+///                                     | trajce.nikolov.nick@outlook.com
+/// Date            | October 2025
+///
+/// Adopted by      | RFIM Space
+/// Copyright 2025  | RFIM Space
+///
+///
 
 
 /// Some snippets taken from here
@@ -88,8 +101,11 @@ typedef enum
     BLOCK_TRANSFER_COMPLETE,
     TRANSFER_ERROR
 } transfer_status_t;
+
 static volatile transfer_status_t   g_stream_status = STREAM_INCOMPLETE;
-extern volatile struct cond_var_t   g_cond_var;
+extern struct cond_var_t            g_cond_var_hart0;
+extern struct cond_var_t            g_cond_var_hart1;
+struct cond_var_t                   g_cond_var_sync;
 axi4dma_stream_desc_t*              g_tdest0_stream_descriptor;
 uint64_t                            g_frame_addr;
 
@@ -212,16 +228,20 @@ PLIC_f2m_2_IRQHandler(void)
                       AXI4DMA_OP_COMPLETE_INTR_MASK | AXI4DMA_WR_ERR_INTR_MASK |
                       AXI4DMA_RD_ERR_INTR_MASK | AXI4DMA_INVALID_DESC_INTR_MASK);
 
-    /// Set the stream transfer to destination memory address
-    ///
     if (g_stream_status == STREAM_TRANSFER_COMPLETE)
-    AXI4DMA_configure_stream(&g_dmac,
-                              g_tdest0_stream_descriptor,
-                              TDEST_0,
-                              STREAM_DEST_OPERAND | STREAM_DEST_DATA_READY | STREAM_DESCRIPTOR_VALID,
-                              STREAM_SIZE_BYTES,
-                              g_frame_addr);
+    {
+        /// Set the stream transfer to destination memory address
+        ///
+        AXI4DMA_configure_stream(&g_dmac,
+                                  g_tdest0_stream_descriptor,
+                                  TDEST_0,
+                                  STREAM_DEST_OPERAND | STREAM_DEST_DATA_READY | STREAM_DESCRIPTOR_VALID,
+                                  STREAM_SIZE_BYTES,
+                                  g_frame_addr);
 
+        cond_var_signal(&g_cond_var_sync);
+        cond_var_signal(&g_cond_var_hart1);
+    }
 
     return EXT_IRQ_KEEP_ENABLED;
 }
@@ -253,7 +273,9 @@ void u54_1(void)
 
     g_frame_addr = ddr_loc + STREAM_OFFSET;
 
-    cond_var_init(&g_cond_var);
+    cond_var_init(&g_cond_var_hart0);
+    cond_var_init(&g_cond_var_hart1);
+    cond_var_init(&g_cond_var_sync);
 
     g_tdest0_stream_descriptor = (axi4dma_stream_desc_t*)(uint64_t)ddr_loc;
 
@@ -287,9 +309,15 @@ void u54_1(void)
     /* Reset the peripherals turn on the clocks */
 
     (void)mss_config_clk_rst(MSS_PERIPH_MMUART1, (uint8_t) MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
-    (void)mss_config_clk_rst(MSS_PERIPH_GPIO2, (uint8_t) MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
     (void)mss_config_clk_rst(MSS_PERIPH_FIC0, (uint8_t) MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
     (void)mss_config_clk_rst(MSS_PERIPH_FIC3, (uint8_t) MPFS_HAL_FIRST_HART, PERIPHERAL_ON);
+
+    SYSREG->SOFT_RESET_CR |= (uint32_t)(SOFT_RESET_CR_FPGA_MASK);
+    SYSREG->SOFT_RESET_CR &= (uint32_t)~(SOFT_RESET_CR_FPGA_MASK);
+    SYSREG->SOFT_RESET_CR |= (uint32_t)(SOFT_RESET_CR_FIC0_MASK);
+    SYSREG->SOFT_RESET_CR &= ~(uint32_t)(SOFT_RESET_CR_FIC0_MASK);
+    SYSREG->SOFT_RESET_CR |= (uint32_t)(SOFT_RESET_CR_FIC3_MASK);
+    SYSREG->SOFT_RESET_CR &= ~(uint32_t)(SOFT_RESET_CR_FIC3_MASK);
 
     mss_enable_fabric();
 
@@ -301,11 +329,6 @@ void u54_1(void)
     PLIC_SetPriority(FABRIC_F2H_2_PLIC, 2);
     PLIC_EnableIRQ(FABRIC_F2H_2_PLIC);
 
-    /// Reset the module
-    ///
-    /// stream_ctrl = (void *)  (STREAM_GEN_BASE_ADDR + 0x4);
-    /// *stream_ctrl = 0x1u << 6u;
-    /// sleep_ms(2000);
 
     /// configure stream size
     ///
@@ -344,6 +367,14 @@ void u54_1(void)
     /// bit 5:4 - High gain 00 Low Gain 01 HDR 10
     /// bit 6 - Reset module
     ///
+
+    /// Reset the module
+    ///
+    *stream_ctrl = 0x1 | (0x01 << 6);
+    *stream_ctrl &= ~(0x1 | (0x01 << 6));
+
+    /// Start streaming
+    ///
     *stream_ctrl = 0x1 | (0x01 << 4);
 
     /// wait for stream to complete
@@ -357,13 +388,13 @@ void u54_1(void)
     ///
     while (STREAM_INCOMPLETE == g_stream_status)
     {
-       asm volatile("nop");
+        asm volatile ("nop");
     }
 
     /// Exposure
     ///
     stream_ctrl_C = (void *)  (STREAM_GEN_BASE_ADDR + 0xC);
-    *stream_ctrl_C = 10;
+    *stream_ctrl_C = 250;
 
 
     /// verify data written matches expected
@@ -386,10 +417,10 @@ void u54_1(void)
     {
         fail = 0u;
 
+        cond_var_wait(&g_cond_var_sync);
+
         DDR_data_ptr = (void*)(ddr_loc + STREAM_OFFSET); /// Stream destination address
         DDR_data_addr = (uint64_t)(DDR_data_ptr);
-
-        cond_var_signal(&g_cond_var);
 
         /// The sent frame counter is encoded in the 2nd pixel
         /// which is part of the word received
@@ -407,9 +438,12 @@ void u54_1(void)
         }
         else
             ++frame_counter;
-
-        *stream_ctrl_C = (++our_frame_counter * 50) % 200; /// for testing
+#if 0
+        /// Cycle thru some exposure values for testing purposes
+        ///
+        *stream_ctrl_C = (++our_frame_counter * 25) % 150; /// for testing
         our_frame_counter = our_frame_counter % 4;
+#endif
 
         /// Line number starts from 0
         ///
@@ -419,12 +453,13 @@ void u54_1(void)
             pixel_counter = 2u;
             for(volatile uint32_t x = 0; x < NUM_COLUMNS/2; ++x)
             {
-                volatile uint32_t texel = *DDR_data_ptr;
+                volatile uint32_t* texel = DDR_data_ptr;
 
                 if (pattern_count++ >= STREAM_SIZE)
                 {
                     pattern_count = 0u;
                 }
+
 
                 /// The second pixel of each line beginning is the Line number
                 ///
@@ -433,17 +468,17 @@ void u54_1(void)
                 else
                     pixel_pattern = (pixel_counter++) | ((pixel_counter++) << 16);
 
-                if (pixel_pattern != texel)
+                if (pixel_pattern != *texel)
                 {
 #ifdef DEBUG_PRINT
-                    sprintf(g_info_string, " > Ln %4d | Fm %4d | exp 0x%08X rd 0x%08X (match failed)    \r\n", y, frame_counter, pixel_pattern, texel);
+                    sprintf(g_info_string, " > Ln %4d | Fm %4d | exp 0x%08X rd 0x%08X (match failed)    \r\n", y, frame_counter, pixel_pattern, *texel);
                     MSS_UART_polled_tx_string(&g_mss_uart1_lo, g_info_string);
 #endif
                     fail = 1;
                 } else
                 {
 #ifdef DEBUG_PRINT
-                    sprintf(g_info_string, " > Ln %4d | Fm %4d | exp 0x%08X rd 0x%08X (match successful)\r\n", y, frame_counter, pixel_pattern, texel);
+                    sprintf(g_info_string, " > Ln %4d | Fm %4d | exp 0x%08X rd 0x%08X (match successful)\r\n", y, frame_counter, pixel_pattern, *texel);
                     MSS_UART_polled_tx_string(&g_mss_uart1_lo, g_info_string);
 #endif
                 }
@@ -454,7 +489,7 @@ void u54_1(void)
 
         if (fail == 0)
         {
-            sprintf(g_info_string, " >> Fm %08d | Stream data match is successful       \r\n", frame_counter);
+            sprintf(g_info_string, " >> Fm %08d | Stream pattern match is successful       \r\n", frame_counter);
             MSS_UART_polled_tx_string(&g_mss_uart1_lo, g_info_string);
         }
         else
@@ -465,11 +500,12 @@ void u54_1(void)
                 sprintf(g_info_string, " >> Fm %08d | Rcvd Fm %08d match failed             \r\n", frame_counter, received_frame_counter);
                 MSS_UART_polled_tx_string(&g_mss_uart1_lo, g_info_string);
             }
-            sprintf(g_info_string, " >> Fm %08d | Stream data match failed                  \r\n", frame_counter);
+            sprintf(g_info_string, " >> Fm %08d | Stream pattern match failed                  \r\n", frame_counter);
             MSS_UART_polled_tx_string(&g_mss_uart1_lo, g_info_string);
         }
 
-        cond_var_wait(&g_cond_var);
+
+        cond_var_wait(&g_cond_var_hart0);
 
      }
 

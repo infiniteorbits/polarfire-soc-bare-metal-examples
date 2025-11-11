@@ -145,7 +145,7 @@
       <cache>
         <registers>
           <register address="0x00000008" description="Way indexes less than or equal to this register value  may be used by the cache. E.g. set to 0x7, will allocate 8 cache ways, 0-7 to cache, and leave 8-15 as LIM. Note 1: Way 0 is always allocated as cache. Note 2: each way is 128KB." name="WAY_ENABLE">
-            <field Type="RW" name="WAY_ENABLE" offset="0" width="8">0x7</field>
+            <field Type="RW" name="WAY_ENABLE" offset="0" width="8">0x0</field>
           </register>
           <register address="0x00000008" description="Way mask register master DMA. Set field to zero to disable way from this master. The available cache ways are 0 to number set in WAY_ENABLE register. If using scratch pad memory, the ways you want reserved for scrathpad are not available for selection, you must set to 0.  e.g. If three ways reserved for scratchpad, WAY_MASK_0, WAY_MASK_1 and WAY_MASK_2 will be set to zero for all masters, so they can not evict the way. " name="WAY_MASK_DMA">
             <field Type="RW" name="WAY_MASK_0" offset="0" width="1">0x1</field>
@@ -418,7 +418,7 @@
             <field Type="RW" name="WAY_MASK_15" offset="15" width="1">0x0</field>
           </register>
           <register address="0x00000136" description="Number of  ways reserved for scratchpad. Note 1: This is not a register Note 2: each way is 128KB. Note 3: Embedded software expects cache ways allocated for scratchpad start at way 0, and work up." name="NUM_SCRATCH_PAD_WAYS">
-            <field Type="RW" name="NUM_OF_WAYS" offset="0" width="8">0x4</field>
+            <field Type="RW" name="NUM_OF_WAYS" offset="0" width="8">0x0</field>
           </register>
         </registers>
       </cache>

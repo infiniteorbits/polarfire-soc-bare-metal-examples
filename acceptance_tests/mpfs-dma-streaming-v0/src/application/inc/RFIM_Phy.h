@@ -6,7 +6,7 @@
 ///                                     | trajce.nikolov.nick@outlook.com
 /// Date            | September 2025
 ///
-/// Copyright       | RFIM Space
+/// Copyright 2025  | RFIM Space
 ///
 
 
