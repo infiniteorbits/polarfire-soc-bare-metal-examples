@@ -4894,8 +4894,10 @@ static uint8_t ddr_manual_addcmd_refclk_offset(DDR_TYPE ddr_type, uint8_t * refc
     refclk_offset = REFCLK_OFFSETS[type_array_index][*refclk_sweep_index + 1U];
 
     *refclk_sweep_index = (uint8_t)(*refclk_sweep_index + 1U);
-
-    return 0;
+#if 1
+    refclk_offset = 0u;
+#endif
+    return refclk_offset;
 }
 #endif
 
