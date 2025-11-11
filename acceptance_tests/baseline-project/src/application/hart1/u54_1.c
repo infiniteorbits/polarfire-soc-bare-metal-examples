@@ -11,6 +11,7 @@
 #include <string.h>
 #include "mpfs_hal/mss_hal.h"
 #include "inc/common.h"
+#include "API_template.h"
 
 volatile uint32_t count_sw_ints_h1 = 0U;
 
@@ -26,10 +27,6 @@ void u54_1(void)
     char info_string[100];
     volatile uint32_t icount = 0U;
     volatile uint32_t stepcount = 0U;
-    uint64_t hartid = read_csr(mhartid);
-    uint32_t pattern_offset = 12U;
-    HLS_DATA* hls = (HLS_DATA*)(uintptr_t)get_tp_reg();
-    HART_SHARED_DATA * hart_share = (HART_SHARED_DATA *)hls->shared_mem;
 
     /* Clear pending software interrupt in case there was any.
      * Enable only the software interrupt so that the E51 core can bring this
@@ -41,7 +38,7 @@ void u54_1(void)
     do
     {
         __asm("wfi");
-    } while (0 == (read_csr(mip) & MIP_MSIP));
+    } while(0 == (read_csr(mip) & MIP_MSIP));
 
     /* The hart is out of WFI, clear the SW interrupt. Hear onwards Application
      * can enable and use any interrupts as required */
@@ -49,11 +46,9 @@ void u54_1(void)
 
     __enable_irq();
 
-    sprintf(info_string, "\r\nHart %u, HLS mem address 0x%lx, Shared mem 0x%lx",\
-                                                          hls->my_hart_id, (uint64_t)hls, (uint64_t)hls->shared_mem);
-    spinlock(&hart_share->mutex_uart0);
-    MSS_UART_polled_tx(g_uart, (const uint8_t*)info_string,(uint32_t)strlen(info_string));
-    spinunlock(&hart_share->mutex_uart0);
+    MSS_UART_polled_tx_string(g_uart, "Hello from Hart 1\r\n");
+
+    PERIPHERAL_init();
 
     while (1U)
     {
@@ -63,10 +58,8 @@ void u54_1(void)
         {
             icount = 0U;
             stepcount++;
-            sprintf(info_string,"Hart %d, step %d\r\n", hartid, stepcount);
-            spinlock(&hart_share->mutex_uart0);
+            sprintf(info_string,"Hart 1, step %d\r\n", stepcount);
             MSS_UART_polled_tx(g_uart, info_string, strlen(info_string));
-            spinunlock(&hart_share->mutex_uart0);
         }
     }
     /* never return */
