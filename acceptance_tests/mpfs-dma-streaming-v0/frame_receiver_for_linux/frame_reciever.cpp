@@ -292,6 +292,30 @@ void packet_handler(u_char* param, const struct pcap_pkthdr* header, const u_cha
         }
 
         texture.update(texels);
+
+        // Save the image
+        if (pckt->chunk == pckt->num_chunks - 1)
+        {
+            std::cout << "Image completed. Saving PNG...\n";
+
+            sf::Image img;
+            img.create(pckt->width, pckt->height, texels);
+
+            // Obtain date for the filename
+            time_t now = time(nullptr);
+            struct tm tm_now;
+            localtime_r(&now, &tm_now);
+
+            char filename[64];
+            strftime(filename, sizeof(filename),
+                    "capture_%Y%m%d_%H%M%S.png", &tm_now);
+
+            if (img.saveToFile(filename))
+                std::cout << "Image saved: " << filename << "\n";
+            else
+                std::cerr << "Error saving the image\n";
+        }
+
     }
 
     printf("%s,%.6ld len:%d\n", timestr, header->ts.tv_usec, header->len);

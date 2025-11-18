@@ -205,7 +205,7 @@ PLIC_f2m_2_IRQHandler(void)
 
     uint8_t error_message[50] = {0};
     sprintf(error_message, " > Transfer Status: %i\r\n", dma_transfer_status);
-    MSS_UART_polled_tx_string(&g_mss_uart1_lo, error_message);
+    //MSS_UART_polled_tx_string(&g_mss_uart1_lo, error_message);
 
     AXI4DMA_clear_irq(&g_dmac,
                       IRQ_NUM_0,
@@ -408,8 +408,11 @@ void u54_1(void)
         else
             ++frame_counter;
 
-        *stream_ctrl_C = (++our_frame_counter * 50) % 200; /// for testing
-        our_frame_counter = our_frame_counter % 4;
+        *stream_ctrl_C = 150 + ((++our_frame_counter * 50) % 350);
+        our_frame_counter %= 8;
+        //*stream_ctrl_C = (10 + frame_counter) % 200;
+        sprintf(g_info_string, "our_frame_counter %d *stream_ctrl_C: %d\r\n",our_frame_counter, *stream_ctrl_C);
+        MSS_UART_polled_tx_string(&g_mss_uart1_lo, g_info_string);
 
         /// Line number starts from 0
         ///
