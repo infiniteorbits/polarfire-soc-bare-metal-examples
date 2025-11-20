@@ -8,8 +8,12 @@
  * Please refer to README.md file for more details
  */
 
+#include <stdio.h>
+#include <string.h>
 #include "mpfs_hal/mss_hal.h"
 #include "inc/common.h"
+
+mss_uart_instance_t *g_uart= &g_mss_uart0_lo;
 
 volatile uint32_t count_sw_ints_h0 = 0U;
 
@@ -21,14 +25,13 @@ volatile uint32_t count_sw_ints_h0 = 0U;
  */
 void e51(void)
 {
-    uint8_t flag = 0u;
+    char info_string[100];
     volatile uint32_t icount = 0U;
-    uint64_t hartid = read_csr(mhartid);
-    uint32_t pattern_offset = 12U;
-    HLS_DATA* hls = (HLS_DATA*)(uintptr_t)get_tp_reg();
-    HART_SHARED_DATA * hart_share = (HART_SHARED_DATA *)hls->shared_mem;
+    volatile uint32_t stepcount = 0U;
 
-    /* Clear pending software interrupt in case there was any. */
+    /* Clear pending software interrupt in case there was any.
+     * Enable only the software interrupt so that the E51 core can bring this
+     * core out of WFI by raising a software interrupt. */
     clear_soft_interrupt();
     set_csr(mie, MIP_MSIP);
 
@@ -38,20 +41,26 @@ void e51(void)
             MSS_UART_115200_BAUD,
             MSS_UART_DATA_8_BITS | MSS_UART_NO_PARITY | MSS_UART_ONE_STOP_BIT);
 
-    MSS_UART_polled_tx_string(&g_mss_uart0_lo ,
-            (const uint8_t*)"\r\nPlease observe UART-1 for application messages\r\n");
+    MSS_UART_polled_tx_string(g_uart, "\r\nHello from Hart 0\r\n");
 
-    /* Raise software interrupt to wake hart 1 */
+    /* Raise software interrupt to wake harts */
     raise_soft_interrupt(1U);
+    raise_soft_interrupt(2U);
+    raise_soft_interrupt(3U);
+    raise_soft_interrupt(4U);
 
     __enable_irq();
 
     while (1U)
     {
         icount++;
-        if (0x100000U == icount)
+
+        if (0x1000000U == icount)
         {
             icount = 0U;
+            stepcount++;
+            sprintf(info_string,"\r\nHart 0, step %d\r\n", stepcount);
+            //MSS_UART_polled_tx(g_uart, info_string, strlen(info_string));
         }
     }
     /* never return */

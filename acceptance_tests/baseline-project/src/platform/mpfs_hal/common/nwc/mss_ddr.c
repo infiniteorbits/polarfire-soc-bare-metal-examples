@@ -4878,11 +4878,11 @@ static uint8_t ddr_manual_addcmd_refclk_offset(DDR_TYPE ddr_type, uint8_t * refc
 
         bubbleSort(arr, LIBERO_SETTING_REFCLK_DDR4_1600_NUM_OFFSETS);
 
-        (void)uprint32(g_debug_uart, "\n\r\n\r DDR RefClck sorted: ", (uint32_t)LIBERO_SETTING_REFCLK_DDR4_1600_NUM_OFFSETS);
+        //(void)uprint32(g_debug_uart, "\n\r\n\r DDR RefClck sorted: ", (uint32_t)LIBERO_SETTING_REFCLK_DDR4_1600_NUM_OFFSETS);
         for (uint8_t i = 0; i < LIBERO_SETTING_REFCLK_DDR4_1600_NUM_OFFSETS; ++i)
         {
             REFCLK_OFFSETS[type_array_index][i+1] = arr[i];
-            (void)uprint32(g_debug_uart, "\n\r\n\r     RefClck offset: ", (uint32_t)REFCLK_OFFSETS[type_array_index][i+1]);
+            //(void)uprint32(g_debug_uart, "\n\r\n\r     RefClck offset: ", (uint32_t)REFCLK_OFFSETS[type_array_index][i+1]);
         }
     }
 
