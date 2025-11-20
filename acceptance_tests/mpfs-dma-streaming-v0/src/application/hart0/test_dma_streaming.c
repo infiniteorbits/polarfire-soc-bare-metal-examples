@@ -143,13 +143,15 @@ test_dma_streaming(void)
                                  sizeof(frame) | 0x0 /*CRC*/,
                                  (void *)0);
 
-            sprintf((char*)msg," TX : %d, frame : %d, chunk : %d\r", (uint16_t)tx_status, frame_cnt, i);
-            PRINT_STRING(msg);
+            sleep_ms(1000);
+
+            //sprintf((char*)msg," TX : %d, frame : %d, chunk : %d\r", (uint16_t)tx_status, frame_cnt, i);
+            //PRINT_STRING(msg);
 
         }
 #endif
 
-        sprintf((char*)msg,"\n\r Frame sent : %d\n\r", frame_cnt++);
+        sprintf((char*)msg,"\n\r Frame sent : %d", frame_cnt++);
         PRINT_STRING(msg);
 
         cond_var_signal(&g_cond_var);
